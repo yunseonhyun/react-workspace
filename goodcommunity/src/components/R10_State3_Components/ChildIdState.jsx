@@ -1,6 +1,6 @@
 import {useState} from "react";
 
-const ChildId = (props) => {
+const ChildIdState = (props) => {
     const {handler} = props; // const handler = props.handler;
 
     console.log(handler); // handler 확인
@@ -19,8 +19,4 @@ const ChildId = (props) => {
 }
 
 
-
-
-
-
-export default ChildId;
+export default ChildIdState;
