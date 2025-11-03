@@ -9,7 +9,13 @@ import PropsEx1 from "./components/R03_Props1";
 import MyProfile from "./components/practices/MyProfile";
 import Greeting from "./components/practices/Greeting";
 import Product from "./components/practices/Product";
-import Weather from "./components/practices/Weather"; // css를 얻어오고 아래 작성된 컴포넌트에 적용
+import Weather from "./components/practices/Weather";
+import PropsEx3 from "./components/R05_Props3";
+import ChildComponent from "./components/R06_Props4";
+import R08_State1 from "./components/R08_State1";
+import State2 from "./components/R09_State2";
+import ParentComponent from "./components/R10_State3_Components/ParentState";
+import ParentState from "./components/R10_State3_Components/ParentState"; // css를 얻어오고 아래 작성된 컴포넌트에 적용
 /* App 컴포넌트 (최상위 컴포넌트)
 *
 * 보통 맨 최상위 컴포넌트는 function을 사용하여 최상위임을 표기
@@ -29,16 +35,27 @@ function App() {
         */
 
         <>
+            <ParentState/>
+            {/*
+            <R08_State1/>
+            <State2 init={50} step={10}/>
+            */}
             {/* 반드시 return에서 시작과 끝을 감싸는 태그 하나 필요 */}
+            {/*
             <ComponentEx/>
             <FunctionEx/>
+            */}
             {/*
             PropsEx1라는 함수에 데이터를 전달하는 방식
             전달할 데이터에서 변수이름 job이 존재하지 않기 때문에
             job을 받은 곳의 데이터는 null 상태로 보여짐
             */}
+            {/*
             <PropsEx1 num='1' name='홍길동' age='20' score='90'/>
             <PropsEx1  name='고말숙' age='30' num='2' score='100'/>
+            <PropsEx3 name='강감찬' age='72' gender='남자'/>
+            <ChildComponent name={'고말숙'}/>
+            <ChildComponent name={'김영희'}/>
 
             <MyProfile name="홍길동" age={20} school="서울대학교"/>
             <Greeting message="안녕하세요! React 입니다" />
@@ -46,6 +63,7 @@ function App() {
             <Product productName="마우스" price={30000} />
             <Weather city="서울" temperature={25} />
             <Weather city="부산" temperature={28} />
+            */}
         </>
 
   );
