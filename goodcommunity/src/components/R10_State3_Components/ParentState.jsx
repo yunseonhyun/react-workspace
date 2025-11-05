@@ -14,16 +14,6 @@ React에서 매우 중요한 상태 끌어올리기(Lifting State Up) Pattern
 자식 컴포넌트 = 기능과 데이터는 부모에게 전달받고, UI를 중점으로 코드를 작성
  */
 
-const ChildTest = (props) => {
-    return(
-        <div>
-            <button onClick={() => {props.handler("BBB")}}>
-                변경하기
-            </button>
-        </div>
-
-    )
-}
 
 const ParentState = () => {
 
@@ -56,11 +46,7 @@ const ParentState = () => {
         setPw(e.target.value);
     };
 
-    const [test, setTest] = useState('A');
 
-    const testTn = (str) => {
-        setTest(str)
-    };
 
     return (
         <>
@@ -79,8 +65,6 @@ const ParentState = () => {
                     Login
                 </button>
             </div>
-            <h2>test 값 : {test}</h2>
-            <ChildTest handler={testTn}/>
         </>
     );
 };
