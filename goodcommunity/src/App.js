@@ -19,7 +19,8 @@ import ParentState from "./components/R10_State3_Components/ParentState";
 import Parent from "./components/R12_Context2";
 import Effect1 from "./components/R13_Effect1";
 import Effect2 from "./components/R14_Effect2";
-import Effect3 from "./components/R15_Effect3_axios"; // css를 얻어오고 아래 작성된 컴포넌트에 적용
+import Effect3 from "./components/R15_Effect3_axios";
+import PopularBoards from "./components/R16_Effect/PopularBoards"; // css를 얻어오고 아래 작성된 컴포넌트에 적용
 /* App 컴포넌트 (최상위 컴포넌트)
 *
 * 보통 맨 최상위 컴포넌트는 function을 사용하여 최상위임을 표기
@@ -39,10 +40,11 @@ function App() {
         */
 
         <>
-            <Effect3/>
+            <PopularBoards/>
             {/*
             <Effect1/>
             <Effect2/>
+            <Effect3/>
             <Parent/>
             <ParentState/>
             <R08_State1/>

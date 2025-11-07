@@ -13,6 +13,14 @@ root.render(
       {/*<PracticeApp/>*/}
       {/*<Main/>*/}
       {/*<Main_Theme/>*/}
+
+
+
+
   </React.StrictMode>
+
+
+
+
 );
 
