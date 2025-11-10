@@ -56,19 +56,22 @@ const Board = () => {
                 </tr>
                 </thead>
                 <tbody>
-                {boards
-                    .map((b) => (
-                <tr>
-                    <th onClick={() => handleIDClick(b.id)}>{b.id}</th>
-                    <th>{b.title}</th>
-                    <th>{b.writer}</th>
-                    <th>{b.viewCount}</th>
-                    <th>{b.createdAt}</th>
-                </tr>
-                ))}
+                    {/*
+                    1. 제목 클릭해도 게시물이 들어가도록
+                    2. error 해결
+                    */}
 
 
-
+                    {boards
+                        .map((b) => (
+                        <tr key={b.id}>
+                            <td onClick={() => handleIDClick(b.id)}>{b.id}</td>
+                            <td onClick={() => handleIDClick(b.id)}>{b.title}</td>
+                            <td>{b.writer}</td>
+                            <td>{b.viewCount}</td>
+                            <td>{b.createdAt}</td>
+                        </tr>
+                    ))}
 
                 </tbody>
             </table>
