@@ -7,7 +7,7 @@ import reportWebVitals from './reportWebVitals';
 // 1. 라우터와 Provider 임포트
 // import {} 사용 방법, 사용하지 않는 방법
 import { BrowserRouter } from 'react-router-dom';
-import AuthProvider from './context/AuthContext';
+import AuthProvider from './context/AuthContext.js';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

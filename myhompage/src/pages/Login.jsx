@@ -49,6 +49,9 @@ const Login = () => {
             return; // 돌려보내기
         }
 
+        // console.log로 로그인 결과 유무를 확인하고자 할 경우
+        // const a = loginFn(memberEmail, memberPassword);
+        // console.log("로그인 결과 : ", a);
         loginFn(memberEmail, memberPassword)
             .then(result => {
                 if(result.success){
