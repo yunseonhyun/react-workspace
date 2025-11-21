@@ -6,8 +6,12 @@ const NotificationToast = () => {
     const { notifications, removeNotification} = useToast();
 const navigate = useNavigate();
     const handleNotificationClick = (notification) => {
+        /*
+        * 과제
+        * 상세보기 떴을 때, 상세보기로 이동하면 게시물이 보이지 않는 현상 발생
+        * 해결하여 상세보기를 클릭했을 때, 게시글이 보일 수 있도록 구현 가능
+        * */
         // console.log로 boardId 확인하고 notificationController와 toast 수정하기
-        // console.log
         // 게시물 id가 있으면 해당 페이지로 이동
         if(notification.boardId) {
             navigate(`/boards/${notification.boardId}`);

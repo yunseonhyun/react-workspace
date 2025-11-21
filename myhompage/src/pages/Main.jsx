@@ -1,24 +1,50 @@
 // 메인 페이지 (인기글)
 import {useEffect, useState} from "react";
 import axios from "axios";
+import {useNavigate} from "react-router-dom";
 
 const Main = () => {
+    const navigate = useNavigate();
     const [boards, setBoards] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     // console.log 로  res.data 데이터를 조회 F12
     useEffect( () =>{
-        axios.get("http://localhost:8085/api/board/popular")
-            // 1. 어떤 언어 코드에서든
-            // 하나의 기능을 작성할 경우 {} 생략
-            // .then(res => res.data)
-            // 다른 기능을 할 필요를 못느껴서!
+        fetchBoards();
+        fetchProducts();
+    },[]);
+
+    useEffect( () =>{
+        axios.get("http://localhost:8085/api/product/all")
             .then(res => {
                 console.log(res.data); // System.out.print 데이터 확인
-                setBoards(res.data);  // 확인된 데이터 배열에 넣어주기
+                setProducts(res.data);  // 확인된 데이터 배열에 넣어주기
             })
             .catch(e =>{
                 alert("데이터를 백엔드에서 가져올 수 없습니다.")
             })
     },[]);
+    const fetchProducts = async () => {
+            try{
+                const r = await axios.get("http://localhost:8085/api/product/all");
+                setProducts(r.data)
+            } catch (err) {
+                alert("데이터를 백엔드에서 가져올 수 없습니다.")
+            }finally {
+                setLoading(false)
+            }
+    }
+
+    const fetchBoards = async () => {
+        try{
+            const r = await axios.get("http://localhost:8085/api/board/popular");
+            setBoards(r.data.slice(0,6)); // 0 ~ 5번까지의 상품 가져오기
+        } catch (err) {
+            alert("데이터를 백엔드에서 가져올 수 없습니다.")
+        }finally {
+            setLoading(false)
+        }
+    }
 
     // 오늘 날짜 포멧팅
     // react가 아닌
@@ -43,7 +69,7 @@ const Main = () => {
                 변수이름 상수이름 기능구현을 작성
                 */}
                 {boards.map((b => (
-                    <li> {b.title}</li>
+                    <li key={b.id}> {b.title}</li>
                 )))}
 
             </ul>
@@ -51,7 +77,11 @@ const Main = () => {
 
         </div>
     )
+
+
+
 };
+
 
 
 export default Main;
