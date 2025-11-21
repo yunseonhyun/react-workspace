@@ -9,6 +9,9 @@ import Write from "./pages/Write";
 import './App.css';
 import BoardDetail from "./pages/BoardDetail";
 import {useAuth} from "./context/AuthContext";
+import NotificationToast from "./components/NotificationToast";
+import Chat from "./chat/Chat";
+
 // 단순히 가져와서 적용할 때는 from 생략
 // 1. 라우팅에 필요한 컴포넌트 임포트
 //    공통 스타일 임포트
@@ -30,6 +33,8 @@ function App() {
     }
     return (
         <div className="App">
+            {/* 모든 곳에서 실시간 알림 토스트 */}
+            <NotificationToast />
             {/* --- 5. 공통 내비게이션 바 --- */}
             <nav className="navbar">
                 <Link to="/" className="logo">myhomepage</Link>
@@ -41,6 +46,7 @@ function App() {
                     {/* 로그인 상태에 따라 다른 메뉴 표시 */}
                     {isAuthenticated ? /* return 이 생략된 형태 */(
                         <>
+                            <NavLink to="/chat">채팅</NavLink>
                             <NavLink to="/write">글쓰기</NavLink>
                             <NavLink to="/mypage">마이페이지</NavLink>
                             <button onClick={handleLogout} className="logout-btn">로그아웃</button>
@@ -63,6 +69,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/mypage" element={<MyPage />} />
                 <Route path="/write" element={<Write />} />
+                <Route path="/chat" element={<Chat/>}/>
             </Routes>
 
             {/* 공통 푸터 - 모든 페이지에 보이는 footer 작성 */}

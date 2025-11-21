@@ -1,3 +1,4 @@
+
 // jsx 가 아니라 js 인 이유
 // ui 적으로 클라이언트 화면에 보여주는 것이 아니라
 // 인증에 관련된 기능 구현이기 때문에
@@ -35,7 +36,7 @@ const AuthProvider = ({children}) => {
         axios.get(API_AUTH_URL+"/check", {
             withCredentials:true })
             .then(res => {
-                console.log("로그인 상태 확인 응답 : ", res.data);
+                //    console.log("로그인 상태 확인 응답 : ", res.data);
 
                 setUser(res.data.user);
             })
@@ -58,18 +59,19 @@ const AuthProvider = ({children}) => {
                     // 서버가 응답을 성공적으로 보냈을 때 실행
                     //setUser(res.data); //로그인 성공 시 사용자에 대한 모든 정보 저장
 
-                    if(res.data.success && res.data.user){
-                    setUser(res.data.user);
-                    return{
-                        success : true,
-                        message : res.data.message
-                    };
+                    if(res.data.success && res.data.user) {
+                        setUser(res.data.user);
+                        return{
+                            success : true,
+                            message : res.data.message
+                        };
                     } else {
                         return {
-                            success : false,
+                            success: false,
                             message: res.data.message || '로그인 실패'
                         }
                     }
+
                 })
             .catch( err => {
                 console.error("로그인 에러 : ", err);
