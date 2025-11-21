@@ -14,38 +14,28 @@ const Main = () => {
         fetchProducts();
     },[]);
 
-    useEffect( () =>{
-        axios.get("http://localhost:8085/api/product/all")
-            .then(res => {
-                console.log(res.data); // System.out.print 데이터 확인
-                setProducts(res.data);  // 확인된 데이터 배열에 넣어주기
-            })
-            .catch(e =>{
-                alert("데이터를 백엔드에서 가져올 수 없습니다.")
-            })
-    },[]);
+
     const fetchProducts = async () => {
-            try{
-                const r = await axios.get("http://localhost:8085/api/product/all");
-                setProducts(r.data)
-            } catch (err) {
-                alert("데이터를 백엔드에서 가져올 수 없습니다.")
-            }finally {
-                setLoading(false)
-            }
+        try{
+            const r=  await  axios.get("http://localhost:8085/api/product/all");
+            setProducts(r.data);
+        } catch (err) {
+            alert("데이터를 백엔드에서 가져올 수 없습니다.")
+        }finally {
+            setLoading(false);
+        }
     }
 
     const fetchBoards = async () => {
         try{
-            const r = await axios.get("http://localhost:8085/api/board/popular");
-            setBoards(r.data.slice(0,6)); // 0 ~ 5번까지의 상품 가져오기
+            const r=  await  axios.get("http://localhost:8085/api/board/popular");
+            setBoards(r.data.slice(0, 6)); // 0 ~ 5 번 까지의 상품 가져오기
         } catch (err) {
             alert("데이터를 백엔드에서 가져올 수 없습니다.")
         }finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
-
     // 오늘 날짜 포멧팅
     // react가 아닌
     // javascript 에서 기본으로 사용할 수 있는 날짜 표현법
@@ -54,34 +44,70 @@ const Main = () => {
     // 2자리 숫자로 맞출 것인데 하나의 자리만 존재한다면 맨 앞에 0 추가
     // 5월 11일 -> 05월 11일 형태로 자리수를 맞춰 표기
     const today = new Date();
-    const 회사가원하는형식의날짜표현 = `${today.getFullYear()}년
+    const formattedDate = `${today.getFullYear()}년
                 ${String(today.getMonth() + 1).padStart(2,'0')}월
                 ${String(today.getDate()).padStart(2,'0')}일`;
+
+    // 가격 포멧팅
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat("ko-KR").format(price);
+    }
+    // 과제 : 상세보기와 같이 과제 클릭했을 때 이동 설정
+    // 게시글 클릭
+    const handleBoardClick = (boardId) => {};
+    // 상품 클릭
+    const handleProductClick = (productId) => {  };
+
+    if(loading){
+        return (
+            <div className="page-container">
+                <div className="loading-container">
+                    <div className="loading-spinner">
+                        <p>로딩 중 ...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
     return(
         <div className="page-container">
             <h1>메인 페이지</h1>
-            <p> {회사가원하는형식의날짜표현} 인기글 목록</p>
+            <p className="main-date">{formattedDate}</p>
 
-            <ul>
-                {/*
-                html 내부에서 {} 는
-                자바스크립트에서 선언한
-                변수이름 상수이름 기능구현을 작성
-                */}
-                {boards.map((b => (
-                    <li key={b.id}> {b.title}</li>
-                )))}
+            <section className="main-section">
+                <div className="section-header">
+                    <h2>인기글</h2>
+                    <button
+                        onClick={() => navigate('/board')}
+                        className="view-more-btn">
+                        더보기 →
+                    </button>
+                </div>
 
-            </ul>
+                {boards.length > 0 ?(
+                    <ul className="board-list">
+                        {boards.map((board) => (
+                            <li key={board.id}
+                                className="board-item"
+                                onClick={() => handleBoardClick(board.id)}
+                            >
+                                <span className="board-title">{board.title}</span>
+                                <div className="board-meta">
+                                    <span className="board-author">{board.writer}</span>
+                                    <span className="board-views">{board.views}</span>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                ): (
+                    <p className="no-data">인기글이 없습니다.</p>
+                )}
+            </section>
 
 
         </div>
     )
-
-
-
 };
-
 
 
 export default Main;
