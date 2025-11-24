@@ -18,6 +18,7 @@ const Main = () => {
     const fetchProducts = async () => {
         try{
             const r=  await  axios.get("http://localhost:8085/api/product/all");
+            console.log("productAll" , r.data);
             setProducts(r.data);
         } catch (err) {
             alert("데이터를 백엔드에서 가져올 수 없습니다.")
@@ -54,9 +55,11 @@ const Main = () => {
     }
     // 과제 : 상세보기와 같이 과제 클릭했을 때 이동 설정
     // 게시글 클릭
-    const handleBoardClick = (boardId) => {};
+    const handleIDClick = (id) => {
+        navigate(`/board/${id}`);
+    }
     // 상품 클릭
-    const handleProductClick = (productId) => {  };
+    const handleProductClick = (productId) => {  navigate(`/product/${productId}`);};
 
     if(loading){
         return (
@@ -89,7 +92,7 @@ const Main = () => {
                         {boards.map((board) => (
                             <li key={board.id}
                                 className="board-item"
-                                onClick={() => handleBoardClick(board.id)}
+                                onClick={() => handleIDClick(board.id)}
                             >
                                 <span className="board-title">{board.title}</span>
                                 <div className="board-meta">
@@ -103,7 +106,45 @@ const Main = () => {
                     <p className="no-data">인기글이 없습니다.</p>
                 )}
             </section>
+            <section className="main-section">
+                <div className="section-header">
+                    <h2>추천 상품</h2>
+                    <button
+                        onClick={() => navigate('/products')}
+                        className="view-more-btn">
+                        더보기 →
+                    </button>
+                </div>
 
+                {products.length > 0 ?(
+                    <ul className="main-product-grid">
+                        {products.map((p) => (
+                            <li key={p.id}
+                                className="main-product-card"
+                                onClick={() => handleProductClick(p.id)}
+                            >
+
+                                <div className="main-product-image">
+                                    {p.imageUrl ?(
+                                        <img src={p.imageUrl} alt={p.productName}
+                                             onError={(e) =>{
+                                                 e.target.onerror=null;
+                                                 e.target.src="상품이 존재하지 않을 경우 기본 이미지 url 작성"
+                                             }}
+                                        />
+                                    ):(
+                                        <div className="no-image">
+                                            <img src="/static/img/default.png" alt="default"/>
+                                        </div>
+                                    )}
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                ): (
+                    <p className="no-data">제품이 없습니다.</p>
+                )}
+            </section>
 
         </div>
     )

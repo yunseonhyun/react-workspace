@@ -12,6 +12,8 @@ import {useAuth} from "./context/AuthContext";
 import NotificationToast from "./components/NotificationToast";
 import Chat from "./chat/Chat";
 import ProductUpload from "./pages/ProductUpload";
+import ProductDetail from "./pages/ProductDetail";
+import Products from "./pages/Products";
 
 // 단순히 가져와서 적용할 때는 from 생략
 // 1. 라우팅에 필요한 컴포넌트 임포트
@@ -42,6 +44,7 @@ function App() {
                 <div className="nav-links">
                     <NavLink to="/">메인</NavLink>
                     <NavLink to="/board">게시판</NavLink>
+                    <NavLink to="/products">상품</NavLink>
 
 
                     {/* 로그인 상태에 따라 다른 메뉴 표시 */}
@@ -71,8 +74,10 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/mypage" element={<MyPage />} />
                 <Route path="/write" element={<Write />} />
+                <Route path="/products" element={<Products/>}/>
                 <Route path="/upload" element={<ProductUpload />} />
                 <Route path="/chat" element={<Chat/>}/>
+                <Route path="/product/:id" element={<ProductDetail/>}/>
             </Routes>
 
             {/* 공통 푸터 - 모든 페이지에 보이는 footer 작성 */}
