@@ -41,6 +41,39 @@ export const withLoading = async(abc, setLoading) => {
 }
 
 
+// ============== 네비게이트 관련 함수 ===============
+// 게시글 상세보기로 이동
+/*
+goToPage 하나면 이 두개 필요하지 않는다.
+
+export const navigateToBoard =(navigate, boardId) => {
+        navigate(`/board/${boardId}`);
+}
+
+export const navigateToProduct = (navigate, productId) => {
+        navigate(`/product/${productId}`);
+}
+*/
+
+// navigateToBoard navigateToProduct goToPage만 있으면 필요 없음
+
+export const goToPage = (navigate, path) => {
+        navigate(path);
+}
+
+export const pageClickHandler = (navigate, basePath) => {
+        return (id) => {
+            navigate(`${basePath}/${id}`);
+        }
+}
+
+export const goBack = (navigate, confirmMessage = null) => {
+        if(confirmMessage) {
+            if(window.confirm(confirmMessage)) navigate(-1);
+        } else navigate(-1)
+}
+
+
 
 
 
