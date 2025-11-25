@@ -1,121 +1,193 @@
-/***************************************
- 컴포넌트들에서 공통으로 사용하는 기능 작성하는 js
- *****************************************/
-import message from "sockjs-client/lib/transport/lib/buffered-sender";
+/*************************************
+ 컴포넌트 들에서 공통으로 사용하는 기능 작성하는 js
+ ********************************** */
+import axios from "axios";
 
 // 기능을 나눌 때 여러 ui 태그에서 반복적으로 사용하는 기능인가?
 
 
-// ================ 로딩 관련 함수 ==============
-    export const renderLoading = (message = '로딩중') => {
-        return(
-            <div className="page-container">
-                <div className="loading-container">
-                    <div className="loading-spinner">
-                        <p>{message}</p>
-                    </div>
+// ========== 로딩 관련 함수 ==========
+export  const renderLoading = (message = '로딩중') => {
+    return(
+        <div className="page-container">
+            <div className="loading-container">
+                <div className="loading-spinner">
+                    <p>{message}</p>
                 </div>
             </div>
-        );
-    }
-// 로딩 후 데이터가 존재하지 않을 경우
-export const renderNoData = (message ='데이터가 없습니다.') => {
-        return (
-            <div className="no-data">
-                <p>{message}</p>
-            </div>
-        )
+        </div>
+    );
 }
+// 로딩 후 데이터가 존재하지 않을 경우
+export const renderNoData = (message = '데이터가 없습니다.') => {
+    return (
+        <div className="no-data">
+            <p>{message}</p>
+        </div>
+    )
+}
+
 
 // 로딩 상태 관리 래퍼 함수
-// abc에 해당하는 데이터 가져오기 기능을 수행하고,
-// 데이터가 무사히 들어오면 로딩 멈충
-export const withLoading = async(abc, setLoading) => {
-        if(setLoading) setLoading(true);
-
-        try {
-            await abc();
-        } finally {
-            if(setLoading) setLoading(false)
-        }
+// abc 에 해당하는 데이터 가져오기 기능을 수행하고,
+// 데이터가 무사히 들어오면 로딩 멈춤
+export const withLoading = async (abc, setLoading) => {
+    if (setLoading) setLoading(true);
+    try {
+        await abc();
+    } finally {
+        if (setLoading) setLoading(false);
+    }
 }
 
-
-// ============== 네비게이트 관련 함수 ===============
+// ========== 네비게이트 관련 함수 ==========
 // 게시글 상세보기로 이동
 /*
-goToPage 하나면 이 두개 필요하지 않는다.
-
-export const navigateToBoard =(navigate, boardId) => {
-        navigate(`/board/${boardId}`);
+goToPage 하나면 navigateToBoard navigateToProduct 필요하지 않는다.
+export  const navigateToBoard = (navigate, boardId) => {
+    navigate(`/board/${boardId}`);
 }
 
-export const navigateToProduct = (navigate, productId) => {
-        navigate(`/product/${productId}`);
+export  const navigateToProduct = (navigate, productId) => {
+    navigate(`/product/${productId}`);
 }
+
+//  navigateToBoard navigateToProduct goToPage 만 있으면 필요 없음
 */
-
-// navigateToBoard navigateToProduct goToPage만 있으면 필요 없음
-
 export const goToPage = (navigate, path) => {
-        navigate(path);
+    navigate(path);
 }
 
-export const pageClickHandler = (navigate, basePath) => {
-        return (id) => {
-            navigate(`${basePath}/${id}`);
-        }
-}
 
 export const goBack = (navigate, confirmMessage = null) => {
-        if(confirmMessage) {
-            if(window.confirm(confirmMessage)) navigate(-1);
-        } else navigate(-1)
+    if (confirmMessage) {
+        if (window.confirm(confirmMessage)) navigate(-1);
+    } else navigate(-1);
+}
+
+
+
+// ========== API 데이터 페칭 관련 함수 ==========
+/*
+const API_URL 의 경우 내부에서만 사용할 수 있도록 설정된 상태
+외부에서 사용 가능한 형태로 변경하길 원한다면
+export const API_URL 로 export를 추가하면 된다.
+
+export const API_URLS의 경우 외부 내부 어디서든 활용 가능하도록 설정
+내부에서만 사용 가능한 형태로 변경하길 원한다면
+export 를 제거한다.
+* */
+const API_URL = 'http://localhost:8085'
+
+export const API_URLS = {
+    AUTH: `${API_URL}/api/auth`,
+    BOARD: `${API_URL}/api/board`,
+    PRODUCT: `${API_URL}/api/product`,
+    EMAIL: `${API_URL}/api/email`
+}
+export const fetchAllProducts = async (axios, setProducts, setLoading = null) => {
+    try {
+        const res = await axios.get(`${API_URLS.PRODUCT}/all`);
+        setProducts(res.data);
+    } catch (error) {
+        alert("데이터를 가져올 수  없습니다.");
+    } finally {
+        if (setLoading) setLoading(false);
+    }
+}
+export const fetchProductDetail = async (axios, id, setProduct, navigate, setLoading = null) => {
+    try {
+        const res = await axios.get(`${API_URLS.PRODUCT}/${id}`);
+        setProduct(res.data);
+    } catch (error) {
+        alert("상품 정보를 불러올 수 없습니다.");
+        navigate("/products"); // App.js 에서 Route 내부에 작성한 프론트엔드 게시물 전체보는 경로 설정
+    } finally {
+        if (setLoading) setLoading(false);
+    }
+}
+
+export const deleteProduct = async (axios, id, navigate) => {
+    try {
+        const res = await axios.delete(`${API_URLS.PRODUCT}/${id}`);
+        alert("상품이 삭제되었습니다.");
+        navigate("/products");
+    } catch (error) {
+        alert("상품 삭제에 실패했습니다.")
+    }
+}
+
+
+export const fetchAllBoards = async (axios, setBoards, setLoading = null) => {
+    try {
+        const res = await axios.get(`${API_URLS.BOARD}/all`);
+        setBoards(res.data);
+    } catch (error) {
+        alert("데이터를 가져올 수  없습니다.");
+    } finally {
+        if (setLoading) setLoading(false);
+    }
+}
+
+export const fetchAllPopularBoards = async (axios, setBoards, setLoading = null) => {
+    try {
+        const res = await axios.get(`${API_URLS.BOARD}/popular`);
+        setBoards(res.data);
+    } catch (error) {
+        alert("데이터를 가져올 수  없습니다.");
+    } finally {
+        if (setLoading) setLoading(false);
+    }
+}
+
+
+export const fetchBoardDetail = async (axios, id, setBoard, navigate, setLoading = null) => {
+    try {
+        const res = await axios.get(`${API_URLS.BOARD}/${id}`);
+        setBoard(res.data);
+    } catch (error) {
+        alert("게시물 정보를 불러올 수 없습니다.");
+        navigate("/board"); // App.js 에서 Route 내부에 작성한 프론트엔드 게시물 전체보는 경로 설정
+    } finally {
+        if (setLoading) setLoading(false);
+    }
+}
+
+export const boardSave = async (axios, formData, navigate) => {
+
+    try {
+        const res = await axios.post(`${API_URLS.BOARD}`, formData);
+        alert("글이 성공적으로 작성되었습니다.");
+        navigate("/board");
+        return res;
+    } catch (error) {
+        alert("글 작성 중 문제가 발생했습니다.")
+        console.error(error);
+        throw error;
+    }
+
 }
 
 
 
 
+export const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        date: 'numeric'
+    });
+};
 
 
-
-
-
-    // 가격 포맷팅
 export const formatPrice = (price) => {
     return new Intl.NumberFormat("ko-KR").format(price);
-};
-
-// 날짜 포맷팅
-export const formatDate = (dateString) => {
-    const d = new Date(dateString);
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-};
-
-// 숫자 포맷
-export const numberWithCommas = (num) => {
-    if (num == null) return "0";
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-};
-
-// 빈값 체크
-export const isEmpty = (value) => {
-    return value === null || value === undefined || value === "";
-};
-
-// 공백 제거
-export const trimText = (text) => {
-    return text.trim();
-};
+}
+// 형빈 : 카테고리
 
 
-// 카테고리 리스트
-export const PRODUCT_CATEGORIES = [
-    "전체",
-    "전자기기",
-    "의류",
-    "식품",
-    "도서",
-    "생활용품",
-    "기타"
-];
+
+
+
