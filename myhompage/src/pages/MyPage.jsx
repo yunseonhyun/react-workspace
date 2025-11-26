@@ -22,7 +22,7 @@ const MyPage = () => {
     useEffect(() => {
         // 로딩중이 종료되었고, 백엔드에서 로그인한 결과가 존재하지 않는게 맞다면
         if (!isAuthenticated) navigate("/login");
-    }, [isAuthenticated, navigate]);
+    }, []);
 
     // 2. page-container를 삼항 연산자 형태로 감싸서 처리
     // BoardWrite 참조 {isAuthenticated : (
@@ -54,12 +54,12 @@ const MyPage = () => {
 
                     <div className="info-group">
                         <div className="info-item">
-                            <span className="info-label">이메일</span>
+                            <span className="info-label">이메일 : </span>
                             <span className="info-value">{user.memberEmail || '-'}</span>
                         </div>
 
                         <div className="info-item">
-                            <span className="info-label">이름</span>
+                            <span className="info-label">이름 : </span>
                             <span className="info-value">{user.memberName || '-'}</span>
                         </div>
 
@@ -83,7 +83,7 @@ const MyPage = () => {
                         <div className="info-item">
                             <span className="info-label">가입일</span>
                             <span className="info-value">
-                                {user.createdAt ? new Date(user.createdAt).toLocaleDateString('ko-KR') : '-'}
+                                {user.memberCreatedAt ? new Date(user.memberCreatedAt).toLocaleDateString('ko-KR') : '-'}
                             </span>
                         </div>
                     </div>

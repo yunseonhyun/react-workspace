@@ -1,6 +1,7 @@
 import {useNavigate} from "react-router-dom";
 import {useState} from "react";
 import axios from "axios";
+import {handleChange} from "../context/scripts";
 
 
 const ProductUpload = () => {
@@ -22,19 +23,17 @@ const ProductUpload = () => {
         '전자제품','가전제품','의류','식품','도서','악세사리','스포츠','완구','가구','기타'
     ]
     // 입력값 변경 핸들러
-    const handleChange = (e) => {
+    // 제품 업로드를 했을 때 제품이 무사히 업로드 되는지 확인
+    const handleCheckChange = (e) => {
         const {name, value} = e.target;
-        setProduct(p => ({
-            ...p,[name]: value,
-        }));
-
+        handleChange(e, setProduct);
         // 입력 시 해당 필드의 에러 메세지 제거
         if(errors[name]) {
             setErrors(p => ({
                 ...p, [name]:''
             }));
         }
-    };
+    }
 
     // 폼 유효성 검사
     const validateForm = () => {
@@ -94,7 +93,7 @@ const ProductUpload = () => {
                             id="productName"
                             name="productName"
                             value={product.productName}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="상품명을 입력하세요."
                             maxLength="200"
                         />
@@ -111,7 +110,7 @@ const ProductUpload = () => {
                             id="productCode"
                             name="productCode"
                             value={product.productCode}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="상품코드를 입력하세요."
                             maxLength="200"
                         />
@@ -130,7 +129,7 @@ const ProductUpload = () => {
                             id="category"
                             name="category"
                             value={product.category}
-                            onChange={handleChange}>
+                            onChange={handleCheckChange}>
                             <option value="">카테고리를 선택하세요.</option>
                             {categories.map(category => (
                                 <option key={category}
@@ -152,7 +151,7 @@ const ProductUpload = () => {
                             id="price"
                             name="price"
                             value={product.price}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="가격 (원)"
                             min="0"
                         />
@@ -169,7 +168,7 @@ const ProductUpload = () => {
                             id="stockQuantity"
                             name="stockQuantity"
                             value={product.stockQuantity}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="재고 수량"
                             min="0"
                         />
@@ -187,7 +186,7 @@ const ProductUpload = () => {
                             id="manufacturer"
                             name="manufacturer"
                             value={product.manufacturer}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="제조사 명을 입력하세요."
                             maxLength="100"
                         />
@@ -201,7 +200,7 @@ const ProductUpload = () => {
                             id="imageUrl"
                             name="imageUrl"
                             value={product.imageUrl}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             maxLength="500"
                         />
                         <small className="form-hint">
@@ -216,7 +215,7 @@ const ProductUpload = () => {
                             id="description"
                             name="description"
                             value={product.description}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="상품에 대한 설명을 입력하세요"
                             rows="5"
                         />

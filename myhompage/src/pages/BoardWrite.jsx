@@ -3,7 +3,7 @@ import React, {useState} from "react";
 import axios from "axios";
 import {NavLink, useNavigate} from "react-router-dom";
 import {useAuth} from "../context/AuthContext";
-import {boardSave} from "../context/scripts";
+import {boardSave, handleChange} from "../context/scripts";
 /*
 user?.memberEmail = 삼항 연산자의 줄임 표현
 user 객체가 존재하면 user.memberEmail 반환
@@ -47,11 +47,9 @@ const BoardWrite = () => {
         boardSave(axios, {...formData, writer: user?.memberEmail}, navigate);
     };
 
-    const handleChange = (e) => {
-        const {name, value} = e.target;
-        setFormData(p => ({
-            ...p, [name]: value
-        }))
+    const handleCheckChange = (e) => {
+        // const {name, value} = e.target;
+        handleChange(e, setFormData)
     }
 
 
@@ -79,7 +77,7 @@ const BoardWrite = () => {
                                    id="title"
                                    name="title"
                                    value={formData.title}
-                                   onChange={handleChange}
+                                   onChange={handleCheckChange}
                                    placeholder="제목을 입력하세요."
                                    maxLength={200}
                                    required
@@ -90,7 +88,7 @@ const BoardWrite = () => {
                                 id="content"
                                 name="content"
                                 value={formData.content}
-                                onChange={handleChange}
+                                onChange={handleCheckChange}
                                 placeholder="내용을 입력하세요."
                                 rows={15}
                                 required

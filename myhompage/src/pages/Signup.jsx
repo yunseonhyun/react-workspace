@@ -1,5 +1,6 @@
 import {useEffect, useRef, useState} from "react";
 import axios from "axios";
+import {handleChange} from "../context/scripts";
 
 const Signup = () => {
 
@@ -237,17 +238,9 @@ const Signup = () => {
         }
 
     }
-    const handleChange = (e) => {
-        const {name, value} = e.target;
-        setFormData(p => ({
-            // p 기존의 name과 name에 해당하는 value 데이터 보유한 변수이름
-            // ...p : 기존 name 키 value 데이터 값에
-            // ,[name] : value 이벤트가 감지된 name의 value 값으로
-            //      데이터를 수정해서 추가
-            //      없던 키-값을 추가해서
-            // formData 변수이름 setter로 저장
-            ...p, [name] : value
-        }))
+    const handleCheckChange = (e) => {
+        // const {name, value} = e.target;
+        handleChange(e, setFormData)
     }
     return (
         <div className="page-container">
@@ -262,7 +255,7 @@ const Signup = () => {
                     <input type="text"
                            name="memberEmail"
                            value={formData.memberEmail}
-                           onChange={handleChange}
+                           onChange={handleCheckChange}
                            placeholder="아이디(이메일)" maxLength="30"/>
 
                     <button id="sendAuthKeyBtn"
@@ -283,7 +276,7 @@ const Signup = () => {
                            id="authKey"
                            placeholder="인증번호 입력"
                            value={formData.authKey}
-                           onChange={handleChange}
+                           onChange={handleCheckChange}
                            maxLength="6"
                            autoComplete="off"/>
 
@@ -312,7 +305,7 @@ const Signup = () => {
                     <input type="password"
                            name="memberPw"
                            value={formData.memberPw}
-                           onChange={handleChange}
+                           onChange={handleCheckChange}
                            placeholder="비밀번호" maxLength="20"/>
                 </div>
 
@@ -320,7 +313,7 @@ const Signup = () => {
                     <input type="password"
                            name="memberPwConfirm"
                            value={formData.memberPwConfirm}
-                           onChange={handleChange}
+                           onChange={handleCheckChange}
                            placeholder="비밀번호 확인" maxLength="20"/>
                 </div>
 
@@ -333,7 +326,7 @@ const Signup = () => {
                 <div className="signUp-input-area">
                     <input type="text" name="memberName"
                            value={formData.memberName}
-                           onChange={handleChange}
+                           onChange={handleCheckChange}
                            placeholder="이름을 입력하세요" maxLength="5"/>
                 </div>
 
