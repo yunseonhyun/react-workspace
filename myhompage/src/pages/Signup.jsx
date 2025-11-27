@@ -1,6 +1,8 @@
 import {useEffect, useRef, useState} from "react";
 import axios from "axios";
-import {handleChange} from "../context/scripts";
+import { handleChange} from "../service/commonService";
+import { fetchSignup} from "../service/ApiService";
+import {useNavigate} from "react-router-dom";
 
 const Signup = () => {
 
@@ -9,6 +11,8 @@ const Signup = () => {
         memberEmail:'',
         memberPw:'',
         memberPwConfirm:'',
+        memberAddress: '',
+        memberPhone: '',
         authKey:''
         /* 집주소, 전화번호 추가예정 */
 
@@ -38,6 +42,8 @@ const Signup = () => {
     });
 
     const timerRef = useRef(null);
+
+
 
     // 초의 경우 지속적으로 1초마다 시간을 줄이고, 0분 0초일 경우 인증 실패 처리
     // 3분 00초일 경우 59초부터 다시 시작하도록 세팅
@@ -115,15 +121,15 @@ const Signup = () => {
 
             if(res.data == 1){
          */
-        console.log("응답 데이터 : ", res.data);
-        console.log("응답 상태 : ", res.status);
+        // console.log("응답 데이터 : ", res.data);
+        // console.log("응답 상태 : ", res.status);
         // 과제 : if(res.data && res.data !== null){ -> }
-        if(res.data && res.data !== null){
+        if(res.data === 1){
             setMessage(prev => ({...prev, authKey: '05:00'}));
             setTimer({min:4, sec:59, active:true});
             alert('인증번호가 발송되었습니다.');
         } else {
-            alert('인증번호 발솔 중 오류가 발생했습니다.')
+            alert('인증번호 발송 중 오류가 발생했습니다.')
         }
     }
 
@@ -148,6 +154,8 @@ const Signup = () => {
         }
 
         try{
+            console.log("이메일 : ", formData.memberEmail);
+            console.log("인증키 : ", formData.authKey);
             const r = await axios.post('http://localhost:8085/api/email/checkAuthKey', // 1번 데이터 보낼 백엔드에 어떤 명칭으로 전달할 것인지 작성
                 {
                 email:formData.memberEmail,
@@ -157,8 +165,8 @@ const Signup = () => {
             // if와 else는 백엔드와 무사히 연결되었다는 전제하에
             // 백엔드에서 특정데이터의 성공유무 확인일뿐,
             // 프론트엔드와 백엔드가 제대로 연결되어있는지 확인할 수 없다.
-            if(r.data && r.data !== null){
-            console.log("r.data : ", r.data);
+                console.log("r.data : ", r.data);
+            if(r.data === 1){
 
                 clearInterval(timerRef.current);
                 setTimer({min:0, sec: 0, active: false});
@@ -170,6 +178,7 @@ const Signup = () => {
                 alert('인증번호가 일치하지 않습니다.')
             }
         } catch (err) { // 백엔드 연결시도를 실패했을 경우
+            console.log("인증확인 실패 : ", err);
             alert("인증 확인 중 서버에 연결되지 않는 오류가 발생했습니다.");
         }
     }
@@ -196,46 +205,11 @@ const Signup = () => {
      await가 작성된 코드 구문이 환료될 때까지 하위 코드들은 잠시 작업 중단 상태
      */
 
+    const navigate = useNavigate();
     const handleSubmit = async (e) => {
         // 제출관련 기능 설정
         e.preventDefault();; // 일시정지 제출 상태
-
-        // 필수 항목 체크
-        if(!formData.memberName) {
-            alert('이름을 입력해주세요.')
-            return; // 돌려보내기 하위기능 작동 x
-        }
-
-        // DB에 저장할 데이터만 전송
-        // body 형태로 전달하기
-        // requestBody requestParam
-        //    body        header
-
-        const signupData = {
-            memberName: formData.memberName,
-            memberEmail: formData.memberEmail,
-            memberPassword: formData.memberPw,
-        }
-
-        // axios.post
-        // 백엔드는 무사히 저장되지만 프론트엔드에서 회원가입 실패가 뜬다.
-        // 비동기 vs 동기 무조건 알고있기
-        // async - await : 백엔드 작업이 끝날때까지 기다린 후
-        // 회원가입 결과 여부 확인
-        // 아래 코드는 백엔드 응답을 기다리지 않고, 바로 확인해서 회원가입 실패가 뜸
-
-        const res = await axios.post("http://localhost:8085/api/auth/signup", signupData);
-
-        if(res.data ==="success" || res.status === 200) {
-            console.log("res.data : ", res.data);
-            console.log("res.status : ", res.status);
-            alert('회원가입이 완료되었습니다.')
-            window.location.href="/";
-        } else if(res.data === "duplicate") {
-            alert("이미 가입된 이메일 입니다.");
-        } else {
-            alert("회원가입에 실패하였습니다.");
-        }
+        await fetchSignup(axios, formData);
 
     }
     const handleCheckChange = (e) => {

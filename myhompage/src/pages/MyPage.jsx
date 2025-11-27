@@ -11,7 +11,7 @@ import {useNavigate} from "react-router-dom";
 //         export = {useAuth} 사용할 수 있다.
 import AuthContext, {useAuth} from "../context/AuthContext";
 import React, {useEffect} from "react";
-import {renderLoading} from "../context/scripts";
+import {renderLoading} from "../service/commonService";
 
 const MyPage = () => {
     const navigate = useNavigate();

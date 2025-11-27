@@ -7,6 +7,8 @@
 // 로그인에 관련된 모든 기능 관리
 import {createContext, useContext, useEffect, useState} from "react";
 import axios from "axios";
+import {API_URLS} from "../service/ApiService";
+import {fetchLoginCheck} from "../service/ApiService";
 
 // 0. 공통 URL 상수이름 형태로 데이터를 작성 후 변수이름으로 상태관리
 const API_AUTH_URL = "http://localhost:8085/api/auth";

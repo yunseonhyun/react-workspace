@@ -1,7 +1,7 @@
 import {useNavigate} from "react-router-dom";
 import {useState} from "react";
 import axios from "axios";
-import {handleChange} from "../context/scripts";
+import {handleChange} from "../service/commonService";
 
 
 const ProductUpload = () => {

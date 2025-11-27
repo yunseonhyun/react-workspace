@@ -1,7 +1,10 @@
 import {useAuth} from "../context/AuthContext";
 import {useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
-import {handleChange} from "../context/scripts";
+import { fetchMypageEdit } from "../service/ApiService";
+import { handleChange } from "../service/commonService";
+
+import axios from "axios";
 
 const MyPageEdit = () => {
 
@@ -61,16 +64,14 @@ const MyPageEdit = () => {
         }
         setIsSubmitting(true);
 
-        setTimeout(() => {
-            setIsSubmitting(false);
-            alert("회원 정보가 수정되었습니다.");
-            navigate("/mypage");
-        }, 1000);
+        fetchMypageEdit(axios, formData, navigate, setIsSubmitting());
+
+
     }
 
     /*
     업로드, 업데이트와 같은 모든 사이트에서 활용하는 공통 기능
-    scripts.js 이동하여 상태관리를 진행하고 재사용
+    commonService.js 이동하여 상태관리를 진행하고 재사용
     const handleChange = (e) => {
         const {name, value} = e.target;
         setFormData(p => ({
@@ -86,6 +87,12 @@ const MyPageEdit = () => {
         const {name, value} = e.target;
         handleChange(e, setFormData)
 
+        /**
+         * 새 비밀번호 입력하고 비밀번호 확인까지 입력
+         * 그 후에 새 비밀번호를 변경할 수 있는 가능성이 있기 때문에
+         * 새 비밀번호 = 비밓번호 확인 일치하는지 체크 후
+         * 새 비밀번호 변경하면 비밀번호 확인까지 같이 변경할 수 있도록 세팅
+         */
         // 새 비밀번호 입력 시 -> 비밀번호 확인과 비교
         if(name === "newPassword") {
             const isMatch = value === formData.confirmPassword

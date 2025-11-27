@@ -1,7 +1,8 @@
 import {useNavigate} from "react-router-dom";
 import {useEffect, useMemo, useState} from "react";
 import axios from "axios";
-import {fetchAllProducts, formatPrice, goToPage, renderNoData} from "../context/scripts";
+import {fetchAllProducts} from "../service/ApiService";
+import { goToPage, renderNoData, formatPrice} from "../service/commonService";
 
 // ctrl + alt + l -> 코드 정렬 단축키
 

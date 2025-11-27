@@ -3,7 +3,9 @@ import React, {useState} from "react";
 import axios from "axios";
 import {NavLink, useNavigate} from "react-router-dom";
 import {useAuth} from "../context/AuthContext";
-import {boardSave, handleChange} from "../context/scripts";
+import { boardSave } from "../service/ApiService";
+import { handleChange } from "../service/commonService";
+
 /*
 user?.memberEmail = 삼항 연산자의 줄임 표현
 user 객체가 존재하면 user.memberEmail 반환
