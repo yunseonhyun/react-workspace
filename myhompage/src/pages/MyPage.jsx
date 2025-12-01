@@ -1,65 +1,71 @@
-// 마이페이지
-/*
-* 로그인 상태일 때만 접근 가능
-* 로그인 후, 유저 정보 p 태그로 가져오기
-* 수정하기 버튼 누르면 마이페이지 수정 이동하기 위해 수정 버튼만 만들어주기
-* navigate 안함
-* */
 
 import {useNavigate} from "react-router-dom";
+import {useContext, useEffect} from "react";
 // default export = AuthContext
 //         export = {useAuth} 사용할 수 있다.
 import AuthContext, {useAuth} from "../context/AuthContext";
-import React, {useEffect} from "react";
 import {renderLoading} from "../service/commonService";
-
+import {getProfileImageUrl} from "../service/ApiService";
+// 마이페이지
+/*
+* 로그인 상태일 때만 접근 가능
+* 로그인 후 ,  유저 정보 p 태그로 가져오기
+* 수정하기 버튼 누르면 마이페이지 수정 이동하기 위해 수정 버튼만 만들어주기
+* navigate 안함
+* */
 const MyPage = () => {
     const navigate = useNavigate();
-    const {user, isAuthenticated, loading} = useAuth();
+    const {user, isAuthenticated , loading} = useAuth();
 
-    // 로그인 상태 확인 후 navigate를 이용해서 /login 보내는 방법이 두가지 존재한다.
-    // 1. useEffect 활용해서 로그인 상태가 아닐 경우 navigate("/login") 처리
+    // 로그인 상태 확인 후 navigate 를 이용해서 /login 보내는 방법이 두가지 존재한다.
+    // 1. useEffect 활용해서 로그인 상태가 아닐 경우 navigate("/login) 처리
     useEffect(() => {
         // 로딩중이 종료되었고, 백엔드에서 로그인한 결과가 존재하지 않는게 맞다면
-        if (!isAuthenticated) navigate("/login");
-    }, []);
+        if (!loading && !isAuthenticated)  navigate("/login");
+    },[loading, isAuthenticated, navigate]);
 
-    // 2. page-container를 삼항 연산자 형태로 감싸서 처리
+    // 2. page-container 를 삼항연산자 형태로 감싸서 처리
     // BoardWrite 참조 {isAuthenticated : (
-    //                                      <> 마이페이지 정보들 보여주기 </>
+    //                                      <>마이페이지 정보들 보여주기</>
     //                                      ) : (
-    //                                          navigate("/login"))
-    //      }
+    //                                          navigate('/login')
+    //                  }
 
-    if (loading) return renderLoading('로딩중');
-    // 자바스크립트는 매개변수를 모두 작성안해도 동작
-    // renderLoading에 () 내부에 작성 안해도 동작
+    if(loading) return renderLoading('로딩중');
+    // 자바스크립트는 매개변수 를 모두 작성안해도 동작
+    // renderLoading   () 에 내부 작성안해도 동작
 
-    // 인증된 유저인데 로그인에 대한 정보가 없을 경우
-    if (!user) {
-        return null;
+    // 인증된 유저인데 로그인 에 대한 정보가 없을 경우
+    if(!user) {
+        return  null;
     }
 
     const handleClick = () => {
         navigate("/mypage/edit");
     }
 
-    return (
+    // 이미지 url 생성 함수
+
+    return(
         <div className="page-container">
             <h1>마이페이지</h1>
-
             <div className="mypage-container">
                 <div className="mypage-section">
                     <h2>회원 정보</h2>
-
                     <div className="info-group">
                         <div className="info-item">
-                            <span className="info-label">이메일 : </span>
+                            <span className="info-label">프로필 이미지</span>
+                            {/* 이미지 경로는 존재하지만 이미지 경로에 이미지가 존재하지 않을 경우 */}
+                            <img src={getProfileImageUrl(user) ||'/static/img/profile/default_profile_image.svg'}/>
+                        </div>
+
+                        <div className="info-item">
+                            <span className="info-label">이메일</span>
                             <span className="info-value">{user.memberEmail || '-'}</span>
                         </div>
 
                         <div className="info-item">
-                            <span className="info-label">이름 : </span>
+                            <span className="info-label">이름</span>
                             <span className="info-value">{user.memberName || '-'}</span>
                         </div>
 
@@ -83,7 +89,11 @@ const MyPage = () => {
                         <div className="info-item">
                             <span className="info-label">가입일</span>
                             <span className="info-value">
-                                {user.memberCreatedAt ? new Date(user.memberCreatedAt).toLocaleDateString('ko-KR') : '-'}
+                                {user.memberCreatedAt
+                                    ?
+                                    new Date(user.memberCreatedAt).toLocaleDateString('ko-KR')
+                                    :
+                                    '-'}
                             </span>
                         </div>
                     </div>
@@ -99,7 +109,7 @@ const MyPage = () => {
                 </div>
             </div>
         </div>
-    )
+    );
 };
 
 export default MyPage;

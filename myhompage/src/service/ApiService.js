@@ -9,7 +9,9 @@ export const API_URLS의 경우 외부 내부 어디서든 활용 가능하도�
 export 를 제거한다.
 * */
 import axios from "axios";
-import signup from "../pages/Signup";
+
+
+axios.defaults.withCredentials = true;
 
 const API_URL = 'http://localhost:8085'
 
@@ -19,62 +21,65 @@ export const API_URLS = {
     PRODUCT: `${API_URL}/api/product`,
     EMAIL: `${API_URL}/api/email`
 }
-
-/********************************************
+/***********************************************************
  유저 백엔드 관련 함수
- *******************************************/
-// 회원가입 = fetchSignup
-// export const fetchSignup = async(axios, formData, navigate) => {
-//     try {
-//         const res = await axios.post(`${API_URLS.AUTH}/signup`, formData);
-//         alert("회원가입이 완료되었습니다");
-//         navigate("/login");
-//         return res;
-//     } catch (error) {
-//         alert("회원가입 중 문제가 발생했습니다.")
-//         console.error(error);
-//         throw error;
-//     }
-// }
+ ***********************************************************/
+// 로그인               = fetchLogin -- > auth 로 작성
+// 로그인상태 유무 확인 = fetchLoginCheck (기존에 작성한 이름 존재한다면 기존 이름 그대로 사용)
+
+// 마이페이지 수정      = fetchMypageEdit
+
 
 export const fetchSignup = async (axios, formData) => {
+    // 필수 항목 체크
     if (!formData.memberName) {
         alert('이름을 입력해주세요.')
-        return; // 돌려보내기 하위기능 작동 x
+        return; // 돌려보내기 하위기능 작동x
     }
-
+    // DB에 저장할 데이터만 전송
+    // body 형태로 전달하기
+    // requestBody requestParam
+    //    body         header
     const signupData = {
         memberName: formData.memberName,
         memberEmail: formData.memberEmail,
         memberPassword: formData.memberPw,
-        memberAddress: formData.memberAddress,
-        memberPhone: formData.memberPhone
     }
-
     try {
-        const res = await axios.post("/api/auth/signup", signupData);
-
+        const res = await axios.post(API_URLS.AUTH + "/signup", signupData);
         if (res.data === "success" || res.status === 200) {
-            console.log("res.data : ", res.data);
+            console.log("res.data   : ", res.data);
             console.log("res.status : ", res.status);
-            alert('회원가입이 완료되었습니다.')
+            alert('회원가입이 완료되었습니다.');
             window.location.href = "/";
-        } else if (res.data === "duplicate") {
+        } else if (res.data === "duplicate")
             alert("이미 가입된 이메일 입니다.");
-        } else {
+        else
             alert("회원가입에 실패하였습니다.");
-        }
     } catch (err) {
-        alert("회원가입 중 문제가 발생했습니다.")
-        console.error(err)
+        alert("회원가입 중 문제가 발생했습니다.");
+        console.error(err);
     }
 }
 
-// 로그인 = fetchLogin --> auth로 작성
-// 로그인상태 유무 확인 = fetchLoginCheck (기존에 작성한 이름 존재한다면 기존 이름 그대로 사용)
+export const fetchLoginCheck = (axios, setUser, setLoading) => {
+    // 로그인 상태 확인 함수 기능 만들기
+    axios.get(API_URLS.AUTH + "/check", {
+        withCredentials: true
+    })
+        .then(res => {
+            //    console.log("로그인 상태 확인 응답 : ", res.data);
 
-// 마이페이지 수정 = fetchMypageEdit
-export const fetchMypageEdit = async (axios, formData, navigatie, setIsSubmitting) => {
+            setUser(res.data.user);
+        })
+        .catch(err => {
+            console.log("로그인 상태 확인 오류 : ", err);
+            setUser(null);
+        })
+        .finally(() => setLoading(false))
+}
+
+export const fetchMypageEdit = async (axios, formData, navigate, setIsSubmitting) => {
     // 수정내용 키:데이터를 모두 담아갈 변수이름
     const updateData = {
         memberName: formData.memberName,
@@ -82,38 +87,78 @@ export const fetchMypageEdit = async (axios, formData, navigatie, setIsSubmittin
         memberPhone: formData.memberPhone,
         memberAddress: formData.memberAddress + formData.memberDetailAddress,
         newPassword: formData.newPassword || null,
-        currentPassword: formData.currentPassword || null
+        currentPassword: formData.currentPassword || null,
     }
     try {
-        const res = await axios.post(`${API_URLS.AUTH}/update`, updateData);
-        if (res.data === "success" || res.status === 200) {
-            alert("회원정보 수정이 완료되었습니다");
-            // navigate("/login");
-        } else if(res.data === "wrongPassword") {
+        const res = await axios.put(API_URLS.AUTH + "/update", updateData);
+        if (res.data.success === true ) {
+            alert("회원정보가 수정되었습니다.")
+        } else if(res.data.message === "wrongPassword") {
             alert("현재 비밀번호가 일치하지 않습니다.")
         } else {
-            alert("회원정보 수정에 실패했습니다.")
+            alert("회원정보 수정에  실패했습니다.")
         }
-        return res;
-    } catch (error) {
+    } catch (err) {
         alert("회원정보 수정 중 문제가 발생했습니다.")
-        console.error(error);
-        throw error;
     } finally {
+        setIsSubmitting(false);
+    }
+}
 
+export const fetchMypageEditWithProfile = async (axios, formData, profileFile, navigate, setIsSubmitting) => {
+    // 수정내용 키:데이터를 모두 담아갈 변수이름
+    const updateData = {
+        memberName: formData.memberName,
+        memberEmail: formData.memberEmail,
+        memberPhone: formData.memberPhone,
+        memberAddress: formData.memberAddress + formData.memberDetailAddress,
+        newPassword: formData.newPassword || null,
+        currentPassword: formData.currentPassword || null,
+        memberProfileImage: profileFile,
+    }
+    try {
+        const res =await axios.put(API_URLS.AUTH + "/update", updateData,{
+            headers: {
+                'Content-Type':'multipart/form-data'
+            },
+            withCredentials: true
+        });
+        if (res.data.success === true ) {
+            alert("회원정보가 수정되었습니다.")
+        } else if(res.data.success === false){
+            alert("현재 비밀번호가 일치하지 않습니다.")
+        } else {
+            // console.log를 찍었는데 콘솔이 찍히지 않는 것은 결과를 불러오기 전에 자바스크립트에서 실행이 먼저 되었기 때문에
+           // console.log("res.data : ",res.data);
+            alert("회원정보 수정에  실패했습니다.")
+        }
+    } catch (err) {
+        alert("회원정보 수정 중 문제가 발생했습니다.")
+    } finally {
+        setIsSubmitting(false);
     }
 }
 
 
-/********************************************
+export const getProfileImageUrl = (user) => {
+    if(!user?.memberProfileImage) return '/static/img/profile/default_profile_image.svg';
+    // memberProfileImage 가 전체 URL 인 경우
+    if(user.memberProfileImage.startsWith('http')) return user.memberProfileImage;
+    if(user.memberProfileImage.startsWith('/profile_images/')) {
+        return `${API_URL}${user.memberProfileImage}`;
+    }
+    // 파일명만 있는 경우
+    return `${API_URL}/profile_images/${user.memberProfileImage}`;
+}
+/***********************************************************
  제품 백엔드 관련 함수
- *******************************************/
+ ***********************************************************/
 /**
  * get : 제품 전체 데이터 가져오는 함수
- * @param axios fetch 향산된 기능으로 백엔드 연결 시 사용
- * @param setProducts 매개변수에서는 데이터가 존재하지 않는 비어있는 변수명칭으로, res.data
- *                    백엔드 데이터를 ui 컴포넌트로 가져가서 활용하는데 쓰임
- * @param setLoading 백엔드 데이터를 가져오기 전까지 로딩중 표기
+ * @param axios             fetch 향상된 기능으로 백엔드 연결 시 사용
+ * @param setProducts       매개변수에서는 데이터가 존재하지 않은 비어있는 변수명칭으로, res.data
+ *                          백엔드 데이터를 ui 컴포넌트로 가져가서 활용하는데 쓰임
+ * @param setLoading        백엔드 데이터를 가져오기 전까지 로딩중 표기
  * @returns {Promise<void>} 백엔드 데이터를 제대로 가져왔는지에 대한 유무를 통하여 결과를 반환한다.
  */
 export const fetchAllProducts = async (axios, setProducts, setLoading = null) => {
@@ -126,15 +171,14 @@ export const fetchAllProducts = async (axios, setProducts, setLoading = null) =>
         if (setLoading) setLoading(false);
     }
 }
-
 /**
- * get : 제품 일부 데이터를 가져오는 함수
- * @param axios fetch 향상된 기능으로 백엔드 연결 시 사용
- * @param id url 주소에 표기된 id = 제품번호를 이용해서 특정 제품번호의 전체 데이터를 가져올 수 있도록 활용
- * @param setProduct 매개변수에서는 데이터가 존재하지 않는 비어있는 변수명칭으로, res.data
- *                    백엔드 데이터를 ui 컴포넌트로 가져가서 활용하는데 쓰임
- * @param navigate 특정 제품번호의 제품이 존재하지 않을 경우 제품목록 페이지로 이동시킨다.
- * @param setLoading 백엔드 데이터를 가져오기 전까지 로딩중 표기
+ * get : 제품 일부 데이터 가져오는 함수
+ * @param axios             fetch 향상된 기능으로 백엔드 연결 시 사용
+ * @param id                url 주소에 표기된 id = 제품번호를 이용해서 특정 제품번호의 전체 데이터를 가져올 수 있도록 활용
+ * @param setProduct        매개변수에서는 데이터가 존재하지 않은 비어있는 변수명칭으로, res.data
+ *                          백엔드 데이터를 ui 컴포넌트로 가져가서 활용하는데 쓰임
+ * @param navigate          특정 제품번호의 제품이 존재하지 않을 경우 제품목록 페이지로 이동시킨다.
+ * @param setLoading        백엔드 데이터를 가져오기 전까지 로딩중 표기
  * @returns {Promise<void>} 백엔드 데이터를 제대로 가져왔는지에 대한 유무를 통하여 결과를 반환한다.
  */
 export const fetchProductDetail = async (axios, id, setProduct, navigate, setLoading = null) => {
@@ -148,12 +192,11 @@ export const fetchProductDetail = async (axios, id, setProduct, navigate, setLoa
         if (setLoading) setLoading(false);
     }
 }
-
 /**
  * delete : 일부 제품을 삭제하는 함수
- * @param axios fetch 향상된 기능으로 백엔드 연결 시 사용
- * @param id url 주소에 표기된 id = 제품번호를 이용해서 특정 제품번호의 데이터를 삭제할 수 있도록 활용
- * @param navigate 특정 제품번호의 제품으로 삭제되어 존재하지 않을 경우 제품목록 페이지로 이동시킨다
+ * @param axios             fetch 향상된 기능으로 백엔드 연결 시 사용
+ * @param id                url 주소에 표기된 id = 제품번호를 이용해서 특정 제품번호의 데이터를 삭제할 수 있도록 활용
+ * @param navigate          특정 제품번호의 제품이 삭제되어 존재하지 않을 경우 제품목록 페이지로 이동시킨다.
  * @returns {Promise<void>} 백엔드 동작의 결과를 반환한다.
  */
 export const deleteProduct = async (axios, id, navigate) => {
@@ -166,15 +209,15 @@ export const deleteProduct = async (axios, id, navigate) => {
     }
 }
 
-/********************************************
+/***********************************************************
  게시물 백엔드 관련 함수
- *******************************************/
+ ***********************************************************/
 /**
- *
- * @param axios fetch 향상된 기능으로 백엔드 연결 시 사용
- * @param setBoards 매개변수에서는 데이터가 존재하지 않은 비어있는 변수명칭으로 , res.data
- *                  뱍엔드 데이터를 ui 컴포넌트로 가져가서 활용하는데 쓰임
- * @param setLoading 백엔드 데이터를 가져오기 전까지 로딩중 표기
+ * get : 게시물 전체 데이터 가져오는 함수
+ * @param axios             fetch 향상된 기능으로 백엔드 연결 시 사용
+ * @param setBoards         매개변수에서는 데이터가 존재하지 않은 비어있는 변수명칭으로, res.data
+ *                          백엔드 데이터를 ui 컴포넌트로 가져가서 활용하는데 쓰임
+ * @param setLoading        백엔드 데이터를 가져오기 전까지 로딩중 표기
  * @returns {Promise<void>} 백엔드 데이터를 제대로 가져왔는지에 대한 유무를 통하여 결과를 반환한다.
  */
 export const fetchAllBoards = async (axios, setBoards, setLoading = null) => {
@@ -187,13 +230,12 @@ export const fetchAllBoards = async (axios, setBoards, setLoading = null) => {
         if (setLoading) setLoading(false);
     }
 }
-
 /**
- *
- * @param axios fetch 향상된 기능으로 백엔드 연결 시 사용
- * @param setBoards 매개변수에서는 데이터가 존재하지 않은 비어있는 변수명칭으로 , res.data
- *                  뱍엔드 데이터를 ui 컴포넌트로 가져가서 활용하는데 쓰임
- * @param setLoading 백엔드 데이터를 가져오기 전까지 로딩중 표기
+ * get : 인기 게시물 전체 데이터 가져오는 함수
+ * @param axios             fetch 향상된 기능으로 백엔드 연결 시 사용
+ * @param setBoards         매개변수에서는 데이터가 존재하지 않은 비어있는 변수명칭으로, res.data
+ *                          백엔드 데이터를 ui 컴포넌트로 가져가서 활용하는데 쓰임
+ * @param setLoading        백엔드 데이터를 가져오기 전까지 로딩중 표기
  * @returns {Promise<void>} 백엔드 데이터를 제대로 가져왔는지에 대한 유무를 통하여 결과를 반환한다.
  */
 export const fetchAllPopularBoards = async (axios, setBoards, setLoading = null) => {
@@ -207,12 +249,16 @@ export const fetchAllPopularBoards = async (axios, setBoards, setLoading = null)
     }
 }
 
+
 /**
  * get : 게시물 일부 데이터 가져오는 함수
- * @param axios fetch 향상된 기능으로 백엔드 연결 시 사용
- * @param id url 주소에 표기된 id = 제품번호를 이용해서 특정 제품번호의 데이터를 삭제할 수 있도록 활용
- * @param navigate 특정 제품번호의 제품으로 삭제되어 존재하지 않을 경우 제품목록 페이지로 이동시킨다
- * @returns {Promise<void>} 백엔드 동작의 결과를 반환한다.
+ * @param axios             fetch 향상된 기능으로 백엔드 연결 시 사용
+ * @param id                url 주소에 표기된 id = 게시물 번호를 이용해서 특정 게시물 번호의 전체 데이터를 가져올 수 있도록 활용
+ * @param setBoard          매개변수에서는 데이터가 존재하지 않은 비어있는 변수명칭으로, res.data
+ *                          백엔드 데이터를 ui 컴포넌트로 가져가서 활용하는데 쓰임
+ * @param navigate          특정 게시물 번호의 게시물이 존재하지 않을 경우 게시물 목록 페이지로 이동시킨다.
+ * @param setLoading        백엔드 데이터를 가져오기 전까지 로딩중 표기
+ * @returns {Promise<void>} 백엔드 데이터를 제대로 가져왔는지에 대한 유무를 통하여 결과를 반환한다.
  */
 export const fetchBoardDetail = async (axios, id, setBoard, navigate, setLoading = null) => {
     try {
@@ -225,13 +271,12 @@ export const fetchBoardDetail = async (axios, id, setBoard, navigate, setLoading
         if (setLoading) setLoading(false);
     }
 }
-
 /**
  * post : 게시물 데이터 저장하는 함수
- * @param axios fetch 향상된 기능으로 백엔드 연결 시 사용
- * @param formData 게시물에 관련된 변수들을 formData 명칭으로 한번에 모아서 백엔드로 전달한다
- * @param navigate 게시글이 성공적으로 DB에 저장되면, 게시물을 확인할 수 있도록 게시물 목록 페이지로 이동
- * @returns {Promise<*>} 백엔드 결과 유무에 따른 결과를 반환
+ * @param axios             fetch 향상된 기능으로 백엔드 연결 시 사용
+ * @param formData          게시물에 관련된 변수들을 formData 명칭으로 한 번에 모아서 백엔드로 전달한다.
+ * @param navigate          게시글이 성공적으로 DB에 저장되면, 게시물을 확인할 수 있도록 게시물 목록페이지로 이동
+ * @returns {Promise<*>}    백엔드 결과 유무에 따른 결과를 반환
  */
 export const boardSave = async (axios, formData, navigate) => {
 
@@ -240,10 +285,10 @@ export const boardSave = async (axios, formData, navigate) => {
         alert("글이 성공적으로 작성되었습니다.");
         navigate("/board");
         return res;
+
     } catch (error) {
-        alert("글 작성 중 문제가 발생했습니다.")
+        alert("글 작성 중 문제가 발생했습니다.");
         console.error(error);
         throw error;
     }
-
 }
