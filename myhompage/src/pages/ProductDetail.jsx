@@ -37,7 +37,7 @@ const ProductDetail = () => {
             <div className="product-detail-header">
                 <h1>상품 상세정보</h1>
                 <button className="btn-back"
-                        onClick={()=>navigate("/products")}
+                        onClick={()=>navigate("/product")}
                 >
                     ← 목록으로
                 </button>
@@ -126,7 +126,7 @@ const ProductDetail = () => {
                 <div className="product-detail-buttons">
                     <button
                         className="btn-edit"
-                        onClick={()=>navigate(`/products/edit/${id}`)}>
+                        onClick={()=>navigate(`/product/edit/${id}`)}>
                         수정
                     </button>
                     <button

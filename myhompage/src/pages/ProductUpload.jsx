@@ -2,39 +2,33 @@ import {useNavigate} from "react-router-dom";
 import {useState} from "react";
 import axios from "axios";
 import {handleChange} from "../service/commonService";
+import {handleChangeImage} from "../service/commonService";
 
 // 상품 이미지 업로드 변경
 // profileImage -> imageUrl 을 이용해서 상품 업로드시 제품 미리보기
-
-/*
-    과제 1: 상품 업로드를 진행할 때, 선택한 이미지 미리보기 설정
-    const handleChangeImage = () => {
-    }
-*/
 
 const ProductUpload = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [product, setProduct] = useState({
-        productName :'',
-        productCode :'',
-        category :'',
-        price :'',
-        stockQuantity :'',
-        description :'',
-        manufacturer :'',
-        imageUrl :'',
+        productName: '',
+        productCode: '',
+        category: '',
+        price: '',
+        stockQuantity: '',
+        description: '',
+        manufacturer: '',
+        imageUrl: '',
+        isActive: 'Y' // 기본값 판매중
     });
-
-    // formData 변수 생성
     const [formData, setFormData] = useState({
-        productName :'',
-        productCode :'',
-        category :'',
-        price :'',
-        stockQuantity :'',
-        description :'',
-        manufacturer :''
+        productName: '',
+        productCode: '',
+        category: '',
+        price: '',
+        stockQuantity: '',
+        description: '',
+        manufacturer: ''
     });
 
     const [imageFile, setImageFile] = useState(null);
@@ -46,56 +40,12 @@ const ProductUpload = () => {
 
 
     const categories = [
-        '전자제품','가전제품','의류','식품','도서','악세사리','스포츠','완구','가구','기타'
+        '전자제품', '가전제품', '의류', '식품', '도서', '악세사리', '스포츠', '완구', '가구', '기타'
     ]
 
-    const handleChangeImage = (e) => {
-        // type = file은 이미지 이외에도 항시 1개 이상의 데이터를 가져온다.
-        // 가 기본 전제로 된 속성으로 multipart를 작성하지 않아
-        // input에서 하나의 이미지만 가져온다 하더라도 항시[0] 번째의
-        // 데이터를 가져온다로 작성해야함
-        const html에서가져온이미지첫번째파일 = e.target.files[0];
 
-        if(html에서가져온이미지첫번째파일) {
-            if(!html에서가져온이미지첫번째파일.type.startsWith('image/')) {
-                alert("이미지 파일만 업로드 가능합니다.");
-                e.target.value = ""; // 한 번더 안정적으로 input 내 데이터 제거
-                return;
-            }
 
-            // 파일 크기 검증 ( 예 : 5MB 제한)
-            const maxsize = 5 * 1024 * 1024;
-            if(html에서가져온이미지첫번째파일.size > maxsize) {
-                alert("파일 크기는 5MB 이하여야 합니다");
-                e.target.value = "";
-                return;
-            }
-
-            // FileReader라는 자바스크립트 내장된 읽기 기능을 사용해서
-            // 파일 미리보기 생성
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                // FileReader를 만든 개발자가 target 한다음 value나
-                // files[인덱스] 대신
-                // 가져온 것에 대한 결과라는 변수이름을 사용하여
-                // result를 사용한다.
-                setPreviewImage(event.target.result);
-            };
-
-            // URL에 존재하는 데이터를 읽겠다. reader에서
-            reader.readAsDataURL(html에서가져온이미지첫번째파일);
-
-            setImageFile(html에서가져온이미지첫번째파일);
-
-            setProduct(prev => ({
-                ...prev,
-                imageUrl: html에서가져온이미지첫번째파일
-            }))
-
-        }
-    }
-
-    // input창 display = none 처리
+    // input 창 display = none 처리
     // 상품미리보기가 null 값일 경우 보여주지 않기 세팅
     // "previewImg" 문자열을 변수로 사용
 
@@ -103,42 +53,39 @@ const ProductUpload = () => {
     //  기존 변수명칭은 모두 setFormData 사용
     //  setProduct 변수명칭 사용
     //  제품 업로드를 했을 때 제품이 무사히 업로드 되는지 확인
-    const handleChange = (e) => {
+    const handleCheckChange = (e) => {
         const {name, value} = e.target;
         handleChange(e, setProduct);
         // 입력 시 해당 필드의 에러 메세지 제거
-        if(errors[name]) {
+        if (errors[name]) {
             setErrors(p => ({
-                ...p, [name]:''
+                ...p, [name]: ''
             }));
         }
     }
     // 폼 유효성 검사
     const validateForm = () => {
         const newErrors = {};
-        if(!product.productName.trim()){
-            newErrors.productName='상품명을 입력하세요.';
+        if (!product.productName.trim()) {
+            newErrors.productName = '상품명을 입력하세요.';
         }
-
-        if(!product.productCode.trim()) {
-            newErrors.productCode = '상품코드를 입력하세요';
+        if (!product.productCode.trim()) {
+            newErrors.productCode = '상품코드를 입력하세요.';
         }
-
-        if(!product.category) {
-            newErrors.category = '상품코드를 선택하세요';
+        if (!product.category) {
+            newErrors.category = '카테고리를 선택하세요.';
         }
-
-        if(!product.price || product.price <= 0) {
-            newErrors.price = '가격을 입력하세요';
+        if (!product.price || product.price <= 0) {
+            newErrors.price = '가격을 입력하세요.';
         }
-
-        if(!product.stockQuantity || product.stockQuantity <= 0) {
-            newErrors.stockQuantity = '재고수량을 입력하세요';
+        if (!product.stockQuantity || product.stockQuantity <= 0) {
+            newErrors.stockQuantity = '재고수량을 입력하세요.';
         }
 
         setErrors(newErrors);
-        return Object
-
+        // 에러값이 모두다 데이터 0 일 때만 통과
+        // 에러값이 존재하면 등록 불가 처리
+        return Object.keys(newErrors).length === 0;
     }
 
     // 폼 제출 핸들러
@@ -152,13 +99,13 @@ const ProductUpload = () => {
          */
         setLoading(true);
         // 백엔드 연결 시도
-        try{
+        try {
             const uploadFormdata = new FormData();
 
-            // product에서 imageUrl을 제외한 나머지 데이터만 productData라는 변수이름 내에 데이터 전달
+            // product 에서 imageUrl 을 제외한 나머지 데이터만 productData 변수이름 내에 데이터 전달
             const {imageUrl, ...productData} = product;
 
-            // product 정보를 JSON Blob으로 추가
+            // product 정보를 JSON Blob 으로 추가
             const productBlob = new Blob(
                 [JSON.stringify(productData)],
                 {type: 'application/json'}
@@ -166,43 +113,41 @@ const ProductUpload = () => {
             uploadFormdata.append('product', productBlob);
 
             // 이미지 파일이 있으면 추가
-            if(imageFile) {
+            if (imageFile) {
                 uploadFormdata.append('imageFile', imageFile);
             }
 
-            const r = await  axios.post(
-                'http://localhost:8085/api/product',uploadFormdata, {
-                    headers : {
-                        'Content-Type' : 'multipart/form-data'
+            const r = await axios.post(
+                'http://localhost:8085/api/product', uploadFormdata, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
                     }
                 }
             );
-            if(r.data.success){
+            if (r.data.success) {
                 alert(r.data.message);
                 navigate("/")
             }
         } catch (err) { // 백엔드 연결 실패
             console.error(err);
 
-            if(err.r?.data?.message){
+            if (err.r?.data?.message) {
                 alert(err.r.data.message);
-            } else{
+            } else {
                 alert("상품 등록에 실패했습니다. 다시 시도해주세요.");
             }
-        }finally{
+        } finally {
             setLoading(false); // 상품 등록을 성공, 실패 이후 loading 중단
         }
     }
 
     const handleCancel = () => {
-        if(window.confirm("작성 중인 내용이 사라집니다. 작성을 취소하시겠습니까?")) {
+        if (window.confirm("작성 중인 내용이 사라집니다. 작성을 취소하시겠습니까?")) {
             navigate("/");
         }
     }
 
-
-
-    return(
+    return (
         <div className="page-container">
             <div className="product-upload-container">
                 <h2>상품 등록</h2>
@@ -216,11 +161,11 @@ const ProductUpload = () => {
                             id="productName"
                             name="productName"
                             value={product.productName}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="상품명을 입력하세요."
                             maxLength="200"
                         />
-                        {errors.productName &&(
+                        {errors.productName && (
                             <span className="error">{errors.productName}</span>
                         )}
                     </div>
@@ -233,11 +178,11 @@ const ProductUpload = () => {
                             id="productCode"
                             name="productCode"
                             value={product.productCode}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="상품코드를 입력하세요."
                             maxLength="200"
                         />
-                        {errors.productCode &&(
+                        {errors.productCode && (
                             <span className="error">{errors.productCode}</span>
                         )}
                         <small className="form-hint">
@@ -252,7 +197,7 @@ const ProductUpload = () => {
                             id="category"
                             name="category"
                             value={product.category}
-                            onChange={handleChange}>
+                            onChange={handleCheckChange}>
                             <option value="">카테고리를 선택하세요.</option>
                             {categories.map(category => (
                                 <option key={category}
@@ -261,7 +206,7 @@ const ProductUpload = () => {
                                 </option>
                             ))}
                         </select>
-                        {errors.category &&(
+                        {errors.category && (
                             <span className="error">{errors.category}</span>
                         )}
                     </div>
@@ -274,11 +219,11 @@ const ProductUpload = () => {
                             id="price"
                             name="price"
                             value={product.price}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="가격 (원)"
                             min="0"
                         />
-                        {errors.price &&(
+                        {errors.price && (
                             <span className="error">{errors.price}</span>
                         )}
                     </div>
@@ -291,11 +236,11 @@ const ProductUpload = () => {
                             id="stockQuantity"
                             name="stockQuantity"
                             value={product.stockQuantity}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="재고 수량"
                             min="0"
                         />
-                        {errors.stockQuantity &&(
+                        {errors.stockQuantity && (
                             <span className="error">{errors.stockQuantity}</span>
                         )}
                     </div>
@@ -309,7 +254,7 @@ const ProductUpload = () => {
                             id="manufacturer"
                             name="manufacturer"
                             value={product.manufacturer}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="제조사 명을 입력하세요."
                             maxLength="100"
                         />
@@ -322,14 +267,15 @@ const ProductUpload = () => {
                             type="file"
                             id="imageUrl"
                             name="imageUrl"
-                            onChange={handleChangeImage}
+                            onChange={handleChangeImage(setPreviewImage, setImageFile, setProduct)}
                             accept="image/*"
-                            style={{display : 'none'}}
+                            style={{display: 'none'}}
                         />
+                        {/**/}
                         <small className="form-hint">
-                            상품 이미지를 업로드 하세요. (최대 5MB 이미지 파일만 가능)
+                            상품 이미지를 업로드 하세요.(최대 5MB 이미지 파일만 가능)
                         </small>
-                        {previewImage &&  (
+                        {previewImage && (
                             <div className="image-preview">
                                 <img src={previewImage}
                                      alt={previewImage}
@@ -341,7 +287,7 @@ const ProductUpload = () => {
                                          borderRadius: '5px',
                                          paddingTop: '5px'
                                      }}
-                                     />
+                                />
                             </div>
                         )}
                     </div>
@@ -353,16 +299,49 @@ const ProductUpload = () => {
                             id="description"
                             name="description"
                             value={product.description}
-                            onChange={handleChange}
+                            onChange={handleCheckChange}
                             placeholder="상품에 대한 설명을 입력하세요"
                             rows="5"
                         />
                     </div>
+
+                    <div className="form-group">
+                        <label>
+                            판매 상태<span className="required">*</span>
+                        </label>
+                        <div className="radio-group">
+                            <label className="radio-label">
+                                <input
+                                    type="radio"
+                                    name="isActive"
+                                    value="Y"
+                                    checked={product.isActive === 'Y'}
+                                    onChange={handleCheckChange}
+                                />
+                                판매중
+                            </label>
+
+                            <label className="radio-label">
+                                <input
+                                    type="radio"
+                                    name="isActive"
+                                    value="N"
+                                    checked={product.isActive === 'N'}
+                                    onChange={handleCheckChange}
+                                />
+                                판매안함
+                            </label>
+                        </div>
+                        <small className="form-hint">
+                            판매중으로 설정하면 고객에게 노출됩니다.
+                        </small>
+                    </div>
+
                     <div className="form-buttons">
                         <button type="submit"
                                 className="btn-submit"
                                 disabled={loading}>
-                            {loading ? '등록 중...' : '등록' }
+                            {loading ? '등록 중...' : '등록'}
                         </button>
                         <button type="button"
                                 className="btn-cancel"
@@ -377,4 +356,4 @@ const ProductUpload = () => {
     )
 }
 
-export  default ProductUpload;
+export default ProductUpload;
