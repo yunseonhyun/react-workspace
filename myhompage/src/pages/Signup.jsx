@@ -4,13 +4,8 @@ import axios from "axios";
 import {clear} from "@testing-library/user-event/dist/clear";
 import {handleChange} from "../service/commonService";
 import {fetchSignup} from "../service/ApiService";
-import {useAuth} from "../context/AuthContext";
 /*******************************
- 과제 1 번 :
- Mypage 에서 정보 수정 들어가지 않고, 프로필 이미지 보여주기
 
- 과제 2 번 :
- Mypage 에서 수정하기 버튼을 눌렀을 때도 프로필 이미지 수정반영 저장하기
 
  과제 3 번 :
  회원가입 할 때 프로필 이미지 선택 여부 / 선택안할 경우 기본 이미지로 회원가입되게 설정
@@ -35,7 +30,6 @@ const Signup = () => {
         password : '영어, 숫자 6~20글자 사이로 입력해주세요.',
         fullname : "한글 2~5자 작성"
     })
-
     const [checkObj, setCheckObj] = useState({
         memberName:false,
         memberEmail:false,
@@ -43,12 +37,15 @@ const Signup = () => {
         memberPwConfirm:false,
         authKey:false
     })
-
     const [timer, setTimer] = useState({
         min:4,
         sec:59,
         active:false
     });
+    const [profileImage, setProfileImage] = useState(null);
+    const [profilePreview, setProfilePreview] = useState("/static/img/profile/default_profile_image.svg");
+
+    const fileInputRef = useRef(null);
     const timerRef =useRef(null);
 
 
@@ -76,8 +73,6 @@ const Signup = () => {
         }
         return () => clearInterval(timerRef.current);
     }, [timer.active]);
-
-
     /*
     handleSubmit handleChange 의 경우 특정 값을 반환하는 것이 아니라
     기능을 수행하는 목적을 가진 메서드
@@ -107,7 +102,6 @@ const Signup = () => {
             num < 10 ? `0${num}` : num
         )
     };
-
     // 인증키와 관련된 백엔드 기능을 수행하고, 수행한 결과를 표기 하기 위하여
     // 백엔드가 실행되고, 실행된 결과를 res.status 형태로 반환하기 전까지 js 하위기능 잠시 멈춤 처리
     const sendAuthKey = async  () => {
@@ -120,7 +114,7 @@ const Signup = () => {
         setTimer({min:4, sec:59, active:true});
         // 백엔드 응답 결과를 res 라는 변수이름에 담아두기
         const res =  await  axios.post('/api/email/signup',
-            formData.memberEmail,
+            {email:formData.memberEmail},
             {
                 headers: {'Content-Type': 'application/json'} // 글자형태로 전달설정
             }
@@ -144,7 +138,6 @@ const Signup = () => {
             alert('인증번호 발송 중 오류가 발생했습니다.');
         }
     }
-
     // async = 중간에 기다림이 있어야하는 기능입니다.
     // 만약에 await 가 작성되어 있는 구문은 백엔드나 다른 api에서 return 결과가 도착할 때 까지
     // 하위 js 코드를 실행하지 않고 잠시 기다립니다.
@@ -190,15 +183,6 @@ const Signup = () => {
             alert("인증 확인 중 서버에 연결되지 않는 오류가 발생했습니다.");
         }
     }
-
-
-
-
-
-
-
-
-
     // js 기능 추가
     /*
     동기   : 순차적으로 진행 은행 번호표 와 같이 순서대로.. 진행
@@ -222,7 +206,8 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         // 제출관련 기능 설정
         e.preventDefault();
-        await fetchSignup(axios,formData);
+        // 자바스크립트는 매개변수 개수와 인자값의 개수를 모두 동일하게 맞춰야하나
+        await fetchSignup(axios,formData, profileImage);
 
 
         // axios.post
@@ -244,84 +229,88 @@ const Signup = () => {
          */
     }
 
-    const handleChange = (e) =>{
+    const handleCheckChange = (e) =>{
         handleChange(e,setFormData);
         // 개발자가 원하는 정규식이나, 입력형식에 일치하게 작성했는지 체크
     }
-
-    const {user, isAuthenticated , updateUser, loading} = useAuth();
-    const fileInputRef = useRef(null);
-    const [profileImage, setProfileImage] = useState('');
-    const [profileFile, setProfileFile] = useState(null);
-    const [isUploading, setUploading] = useState(false);
-    // 프로필 이미지 클릭 시 파일 선택
-    const handleProfileClick = () => {
-        fileInputRef.current?.click();
-    }
-    // 프로필 이미지 파일 선택
-    const handleProfileChange = async  (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
-
-        // 이미지 파일인지 확인 이미지 파일이 아닌게 맞을경우
-        if(!file.type.startsWith("image/")){
-            alert("이미지 파일만 업로드 가능합니다.");
-            return;
-        }
-
-        // 파일 크기 확인 (5MB)
-        if(file.size > 5 * 1024 * 1024) {
-            alert("파일 크기는 5MB 를 초과할 수 없습니다.");
-            return;
-        }
-
-        // 미리보기 표기
-        const reader = new FileReader();
-        reader.onloadend = (e) => {
-            setProfileImage(e.target.result);
-        };
-        reader.readAsDataURL(file);
-        // 파일 저장
-        setProfileFile(file);
-        await  uploadProfileImage(file);
-    }
-    const uploadProfileImage = async (file) => {
-        setUploading(true);
-        try {
-            const uploadFormData = new FormData();
-            uploadFormData.append("file", file);
-            uploadFormData.append("memberEmail", user.memberEmail);
-            const res = await  axios.post('/api/auth/profile-image', uploadFormData, {
-                headers: {
-                    'Content-Type':'multipart/form-data'
-                }
-            });
-
-            if(res.data.success === true) {
-                alert("프로필 이미지가 업데이트 되었습니다.");
-                setProfileImage(res.data.imageUrl);
-
-                // 세션에서 최신 사용자 정보 가져오기
-                const sessionRes = await axios.get("/api/auth/check", {
-                    withCredentials: true
-                });
-
-                if(sessionRes.data.user) {
-                    updateUser(sessionRes.data.user); //전역 user 상태 업데이트
-                }
+    const handleProfileImageChange = (e) => {
+        // e.target.value = html 내부에 클라이언트가 작성하거나 선택한 text 글자형태의 값을 js로 가져와서 사용
+        // 맨 첫 번째 파일은 index 0번부터 저장
+        // 우리는 프로필 사진 1장을 가져올 것이기 때문에 e.target.files[0]
+        const html에서가져온이미지파일 = e.target.files[0];
+        if(html에서가져온이미지파일) {
+            //파일 유효성 검사
+            if(!html에서가져온이미지파일.type.startsWith("image/")){ // image 확장자로 되어있는 파일이 아닌게 사실이라면
+                alert('이미지 파일만 업로드 가능합니다.');
+                return; //저장되지 못하도록 돌려보내기
             }
-        }catch (error) {
-            alert(error);
-            setProfileImage(user?.memberProfileImage ||'/static/img/default-profile.svg');
-        } finally {
-            setUploading(false);
-        }
-    }
 
+            if(html에서가져온이미지파일.size > 5 * 1024 * 1024) {
+                alert("파일 크기는 5MB를 초과할 수 없습니다.");
+                return;
+            }
+            setProfileImage(html에서가져온이미지파일); //아무 문제 없으면 profileImage 변수에 가져온파일 데이터 setter 이용해서 저장
+
+            // 미리보기 이미지 생성
+            const reader = new FileReader();
+            reader.onloadend = (e) => {
+                setProfilePreview(reader.result); //이미지 읽은 데이터에 대한 결과를 미리보기 변수에 setter 이용해서 저장
+            };
+            reader.readAsDataURL(html에서가져온이미지파일);
+
+        }
+    };
+
+    const handleRemoveProfileImage = () => {
+        setProfileImage(null);
+        setProfilePreview("/static/img/profile/default_profile_image.svg");
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ""; //현재 새로고침 하지 않아도 저장해놓는 파일 데이터 지우기
+        }
+
+    }
     return(
         <div className="page-container">
 
             <form onSubmit={handleSubmit}>
+                <div className="profile-image-section">
+                    <label htmlFor="memberProfile">
+                        프로필 이미지
+                    </label>
+                    <div className="profile-image-container"
+                         onClick={() => fileInputRef.current?.click()}
+                    >
+
+                        <img src={profilePreview}
+                             alt="프로필 미리보기"
+                             className="profile-image"
+                        />
+                        <div className="profile-image-overlay">
+                            이미지 선택
+                        </div>
+                    </div>
+                    <input type="file"
+                           accept="image/*"
+                           onChange={handleProfileImageChange}
+                           id="memberProfile"
+                           name="memberProfile"
+                           style={{display: 'none'}}
+                           ref={fileInputRef}
+
+                    />
+
+                    {profileImage && (
+                        <button type="button"
+                                className="btn-reset"
+                                onClick={handleRemoveProfileImage}
+                        >이미지 제거</button>
+                    )}
+                    <span className="form-hint">
+                        * 이미지를 선택하지 않으면 기본 프로필 이미지가 설정됩니다.
+                    </span>
+                </div>
+
+
 
                 <label htmlFor="memberEmail">
                     <span className="required">*</span> 아이디(이메일)
@@ -332,7 +321,7 @@ const Signup = () => {
                     <input type="text"
                            name="memberEmail"
                            value={formData.memberEmail}
-                           onChange={handleChange}
+                           onChange={handleCheckChange}
                            placeholder="아이디(이메일)" maxLength="30"/>
 
                     <button id="sendAuthKeyBtn"
@@ -365,7 +354,7 @@ const Signup = () => {
                            id="authKey"
                            placeholder="인증번호 입력"
                            value={formData.authKey}
-                           onChange={handleChange}
+                           onChange={handleCheckChange}
                            maxLength="6"
                            autoComplete="off"/>
 
@@ -385,7 +374,7 @@ const Signup = () => {
                     <input type="password"
                            name="memberPw"
                            value={formData.memberPw}
-                           onChange={handleChange}
+                           onChange={handleCheckChange}
                            placeholder="비밀번호"
                            maxLength="20"/>
                 </div>
@@ -394,7 +383,7 @@ const Signup = () => {
                     <input type="password"
                            name="memberPwConfirm"
                            value={formData.memberPwConfirm}
-                           onChange={handleChange}
+                           onChange={handleCheckChange}
                            placeholder="비밀번호 확인"
                            maxLength="20"/>
                 </div>
@@ -407,7 +396,7 @@ const Signup = () => {
                 <div className="signUp-input-area">
                     <input type="text" name="memberName"
                            value={formData.memberName}
-                           onChange={handleChange}
+                           onChange={handleCheckChange}
                            placeholder="이름을 입력하세요."
                            maxLength="5"/>
                 </div>
@@ -439,25 +428,6 @@ const Signup = () => {
 
                 <div className="signUp-input-area">
                     <input type="text" name="memberAddress" placeholder="상세 주소" id="detailAddress"/>
-                </div>
-
-                <div className="profile-image-section">
-                    <label>프로필 이미지</label>
-                    <div className="profile-image-container" onClick={handleProfileClick}>
-                        <img src={profileImage}
-                             className="profile-image"
-                        />
-                        <div className="profile-image-overlay">
-                            {isUploading ? "업로드 중..." : '이미지 변경'}
-                        </div>
-                    </div>
-                    <input type="file" ref={fileInputRef}
-                           onChange={handleProfileChange}
-                           accept="image/*"
-                           style={{ display: 'none' }}
-                           multiple
-                    />
-                    <span className="form-hint">이미지를 클릭하여 변경할 수 있습니다.(최대 5MB)</span>
                 </div>
 
                 <button id="signUpBtn">가입하기</button>
