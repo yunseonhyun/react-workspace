@@ -191,6 +191,35 @@ export const handleChangeImage = (setPreviewImage, setImageFile, setProduct) => 
 }
 
 
+// 프로필 이미지 파일 선택
+export const handleProfileChange = (setProfileImage, setProfileFile, uploadProfileImage) => (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 이미지 파일인지 확인 이미지 파일이 아닌게 맞을경우
+    if (!file.type.startsWith("image/")) {
+        alert("이미지 파일만 업로드 가능합니다.");
+        return;
+    }
+
+    // 파일 크기 확인 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert("파일 크기는 5MB 를 초과할 수 없습니다.");
+        return;
+    }
+
+    // 미리보기 표기
+    const reader = new FileReader();
+    reader.onloadend = (e) => {
+        setProfileImage(e.target.result);
+    };
+    reader.readAsDataURL(file);
+    // 파일 저장
+    setProfileFile(file);
+     uploadProfileImage(file);
+}
+
+
 /********************************************
  유효성 검사 함수
  *******************************************/

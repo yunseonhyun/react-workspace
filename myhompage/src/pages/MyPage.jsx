@@ -48,6 +48,8 @@ const MyPage = () => {
 
     return(
         <div className="page-container">
+        {isAuthenticated ?(
+            <>
             <h1>마이페이지</h1>
             <div className="mypage-container">
                 <div className="mypage-section">
@@ -108,6 +110,8 @@ const MyPage = () => {
                     </div>
                 </div>
             </div>
+            </>
+            ) : (navigate('/login'))}
         </div>
     );
 };

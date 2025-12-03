@@ -3,6 +3,7 @@ import {useState} from "react";
 import axios from "axios";
 import {handleChange} from "../service/commonService";
 import {handleChangeImage} from "../service/commonService";
+import {useAuth} from "../context/AuthContext";
 
 // 상품 이미지 업로드 변경
 // profileImage -> imageUrl 을 이용해서 상품 업로드시 제품 미리보기
@@ -30,6 +31,8 @@ const ProductUpload = () => {
         description: '',
         manufacturer: ''
     });
+
+    const {user, isAuthenticated} = useAuth();
 
     const [imageFile, setImageFile] = useState(null);
 
@@ -149,6 +152,8 @@ const ProductUpload = () => {
 
     return (
         <div className="page-container">
+            {isAuthenticated ? /* return 이 생략된 형태 */ (
+
             <div className="product-upload-container">
                 <h2>상품 등록</h2>
                 <form onSubmit={handleSubmit} className="product-form">
@@ -352,6 +357,7 @@ const ProductUpload = () => {
                     </div>
                 </form>
             </div>
+            ) : (navigate('/login'))}
         </div>
     )
 }

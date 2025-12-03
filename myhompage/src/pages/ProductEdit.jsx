@@ -1,8 +1,8 @@
 import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useRef, useState} from "react";
-import {fetchProductDetail} from "../service/ApiService";
+import {fetchMypageEdit, fetchProductDetail} from "../service/ApiService";
 import axios from "axios";
-import {handleChangeImage} from "../service/commonService";
+import {handleChange, handleChangeImage} from "../service/commonService";
 
 /**
  * 과제 3 : 수정하기 수정된 결과 반영
@@ -35,6 +35,19 @@ const ProductEdit = () => {
         isActive: 'Y'
     });
 
+    const [formData, setFormData] = useState({
+        productName: '',
+        productCode: '',
+        category: '',
+        price: '',
+        stockQuantity: '',
+        description: '',
+        manufacturer: '',
+        imageUrl: '',
+        isActive: 'Y'
+    });
+
+
     const [imageFile, setImageFile] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
     const [errors, setErrors] = useState({});
@@ -44,7 +57,7 @@ const ProductEdit = () => {
     ]
 
     const handleCancel = () => {
-        if(window.confirm("수정을 취소하시겠습니까? 변경사항이 저장되지 않습니다.")) {
+        if (window.confirm("수정을 취소하시겠습니까? 변경사항이 저장되지 않습니다.")) {
             navigate(`/product/${id}`);
         }
     }
@@ -56,6 +69,62 @@ const ProductEdit = () => {
     useEffect(() => {
         fetchProductDetail(axios, id, setProduct, navigate, setLoading);
     }, [id]);
+
+
+    const handleCheckChange = (e) => {
+        const {name, value} = e.target;
+        handleChange(e, setProduct);
+        // 입력 시 해당 필드의 에러 메세지 제거
+        if (errors[name]) {
+            setErrors(p => ({
+                ...p, [name]: ''
+            }));
+        }
+    }
+
+    /* TODO : 해야할 기능
+    0. 제출 일시 정지 / 유효성 검사
+    1. 변경된 데이터를 가져온다.
+    2. 백엔드에 데이터를 어떻게 전달할지 결정한다.
+    3. 백엔드에서 @RequestPart라면 Product 객체와 이미지 파일을 분리한 후, product 객체는 json -> 문자열 형태로
+    4. 이미지는 Multipart로 전달한다
+    5. axios put / patch를 이용해서 백엔드 Mapping과 연동한다.
+    */
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const uploadFormData = new FormData();
+            // 따로 제외하고 싶은 데이터의 변수명칭을 ... 형태가 나오기 전에 작성하여 제거한 후, 나머지 데이터를 전달할 때 사용하는 방법
+            const {imageUrl, ...updateProductData} = product
+            const updateBlob = new Blob(
+                [JSON.stringify(updateProductData)],
+                {type: "application/json"}
+            );
+            uploadFormData.append("product", updateBlob);
+            if (imageFile) {
+                uploadFormData.append('imageFile', imageFile);
+            }
+
+            const r = await axios.put(
+                `http://localhost:8085/api/product/${id}`, uploadFormData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+            );
+            if (r.data.success) {
+                alert(r.data.message);
+                navigate(`/product/${id}`)
+            } else{
+
+            }
+
+        } catch (err) { // 백엔드 연결 실패
+                alert("상품 등록에 실패했습니다. 다시 시도해주세요.");
+
+        }
+    }
+
 
     // isActive data가 null일 경우 N으로 체크 표기 하게 설정
     return (
@@ -81,7 +150,7 @@ const ProductEdit = () => {
                             type="file"
                             ref={fileInputRef}
                             accept="image/*"
-                            style={{ display: 'none' }}
+                            style={{display: 'none'}}
                             onChange={handleChangeImage(setPreviewImage, setImageFile, setProduct)}
                         />
                         <small className="form-hint">
@@ -101,6 +170,7 @@ const ProductEdit = () => {
                             value={product.productName}
                             placeholder="상품명을 입력하세요."
                             maxLength="200"
+                            onChange={handleCheckChange}
                         />
                         {errors.productName && (
                             <span className="error">{errors.productName}</span>
@@ -132,7 +202,9 @@ const ProductEdit = () => {
                         <select
                             id="category"
                             name="category"
-                            value={product.category}>
+                            value={product.category}
+                            onChange={handleCheckChange}
+                        >
                             <option value="">카테고리를 선택하세요.</option>
                             {categories.map(category => (
                                 <option key={category} value={category}>
@@ -157,6 +229,7 @@ const ProductEdit = () => {
                             value={product.price}
                             placeholder="가격 (원)"
                             min="0"
+                            onChange={handleCheckChange}
                         />
                         {errors.price && (
                             <span className="error">{errors.price}</span>
@@ -175,6 +248,7 @@ const ProductEdit = () => {
                             value={product.stockQuantity}
                             placeholder="재고 수량"
                             min="0"
+                            onChange={handleCheckChange}
                         />
                         {errors.stockQuantity && (
                             <span className="error">{errors.stockQuantity}</span>
@@ -193,6 +267,7 @@ const ProductEdit = () => {
                             value={product.manufacturer}
                             placeholder="제조사 명을 입력하세요."
                             maxLength="100"
+                            onChange={handleCheckChange}
                         />
                     </div>
 
@@ -208,6 +283,7 @@ const ProductEdit = () => {
                                     name="isActive"
                                     value="Y"
                                     checked={product.isActive === 'Y'}
+                                    onChange={handleCheckChange}
                                 />
                                 <span>판매중</span>
                             </label>
@@ -217,6 +293,7 @@ const ProductEdit = () => {
                                     name="isActive"
                                     value="N"
                                     checked={product.isActive === 'N'}
+                                    onChange={handleCheckChange}
                                 />
                                 <span>판매중지</span>
                             </label>
@@ -237,6 +314,7 @@ const ProductEdit = () => {
                             value={product.description}
                             placeholder="상품에 대한 설명을 입력하세요"
                             rows="5"
+                            onChange={handleCheckChange}
                         />
                     </div>
 
@@ -245,7 +323,9 @@ const ProductEdit = () => {
                         <button
                             type="submit"
                             className="btn-submit"
-                            disabled={loading}>
+                            disabled={loading}
+                            onClick={handleSubmit}
+                        >
                             {loading ? '수정 중...' : '수정 완료'}
                         </button>
                         <button
