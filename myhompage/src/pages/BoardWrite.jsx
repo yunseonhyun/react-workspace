@@ -1,21 +1,20 @@
 // 글쓰기
-import React, {useRef, useState} from "react";
+import {useRef, useState} from "react";
 import axios from "axios";
-import {NavLink, useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {useAuth} from "../context/AuthContext";
-import { boardSave } from "../service/ApiService";
-import { handleChange, handleChangeImage } from "../service/commonService";
-
+import {handleChange, handleChangeImage} from "../service/commonService";
+import {boardSave} from "../service/ApiService";
 /*
-user?.memberEmail = 삼항 연산자의 줄임 표현
+user?.memberEmail = 삼항연산자의 줄임표현
 user 객체가 존재하면 user.memberEmail 반환
-user가 null 또는 undefined라면 에러 없이 unsefined 반환
+user 가  null 또는 undefined 라면 에러 없이 undefined 반환
 
 const email = user.memberEmail;
         의 경우 user가 null 일 경우 error 발생
 
-const email = user?.memberEmail
-        의 경우 user가 null일 경우 undefined발생
+const email = user?.memberEmail'
+        의 경우 user가 null 일 경우 undefined 발생
 
 
 user?.memberEmail 아래와 동일하게 작동
@@ -23,98 +22,137 @@ user?.memberEmail 아래와 동일하게 작동
 user ? user.memberEmail : undefined 형태
 
 let email;
-if(user) {
-    email = user.memberEmail;
+if (user) {
+      email = user.memberEmail;
 } else {
-    email = undefined;
+      email = undefined;
 }
- */
+* */
 
-/*
-TODO : 게시물 작성하기 에서 게시물 관련 이미지 추가 넣기
-// 1. 게시물 작성할 때, 게시물 이미지 추가하기와 같은 라벨 추가
-// 2. 라벨을 선택했을 때 이미지만 선택 가능하도록 input 설정
-// 3. input = display none
-// 4. 이미지 추가하기 클릭하면 새롭게 클릭된 이미지로 변경
- */
 const BoardWrite = () => {
-    // imageFile : 업로드할 이미지파일을 따로 저장
-    // imageUrl :  클라이언트가 input창에 넣어준 데이터
-
-
-    // form 데이터 내부 초기값
-    // 작성자 -> 나중에 로그인한 아이디로 박제 변경불가하게
-    // react-router-dom 에 존재하는 path 주소 변경 기능 사용
     const navigate = useNavigate();
     const {user, isAuthenticated, logoutFn} = useAuth();
 
-    const boardImgFileInputRef = useRef(null);
-    // js는 컴파일 형태가 아니고, 변수 정의는 순차적으로 진행하므로, user를 먼저 호출하고 나서
-    // user 관련된 데이터 활용
+    // 메인 이미지 관련
+    const mainImgFileInputRef = useRef(null);
+    const [uploadedMainBoardImageFile, setuploadedMainBoardImageFile] = useState(null);
+    const [boardMainImagePreview, setboardMainImagePreview] = useState(null);
 
-    const [uploadBoardImageFile, setUploadBoardImageFile] = useState(null); // 실제 db에 업로드하고, 파일 폴더에 저장할 이미지 파일
-    const [boardImagePreview, setBoardImagePreview] = useState(null);
-    const [formData, setFormData] = useState({
+    // 상세 이미지 관련 (최대 5장)
+    const 상세사진_새로고침해도_상태변화없도록_설정 = useRef(null);
+    const [상세사진_이름들, set상세사진_이름들] = useState(null);
+    const [상세사진들_미리보기, set상세사진들_미리보기] = useState([]);
+
+
+    // 상세 이미지 관련 (최대 5장)
+    const [board, setBoard] = useState({
         title: '',
         content: '',
-        writer: user?.memberEmail || '',
-        imageUrl: ''
+        writer: user?.memberEmail,
+
     })
-
-
-
     const handleSubmit = async (e) => {
-        e.preventDefault(); //제출 일시 중지
+        e.preventDefault();
 
-        try{
-            // 1. imageUrl을 제외한 나머지 데이터 JSON 변환
-            const boardUploadFormData = new FormData();
+        const boardUploadFromData = new FormData();
 
-            const {imageUrl, ...boardDataWithoutImage} = formData
-            boardDataWithoutImage.writer = user?.memberEmail;
-
-            const boardDataBlob = new Blob(
-                [JSON.stringify(boardDataWithoutImage)],
-                {type: "application/json"}
-            );
-
-            // FormData에 board 데이터 추가
-            boardUploadFormData.append("formData", boardDataBlob);
-
-            // 4. 이미지 파일이 있으면 formData에 추가
-            if (uploadBoardImageFile) {
-                boardUploadFormData.append('imageFile', uploadBoardImageFile);
-            }
-
-
-
-            boardSave(axios, {...boardUploadFormData, writer: user?.memberEmail}, navigate);
-        }catch (err) {
+        const boardData = {
+            title: board.title,
+            content: board.content,
+            writer: user?.memberEmail,
 
         }
 
+        const boardDataBlob = new Blob(
+            [JSON.stringify(boardData)],
+            {type: 'application/json'}
+        );
+
+        boardUploadFromData.append('board', boardDataBlob);
+
+        if (uploadedMainBoardImageFile) boardUploadFromData.append('mainImage', uploadedMainBoardImageFile);
+
+        // 상세 이미지들 추가
+
+        if(상세사진_이름들 && 상세사진_이름들.length > 0) {
+            // forEach는 향산된 for문으로 []에서 한장씩 꺼내 추가
+            상세사진_이름들.forEach((사진한장씩) => {
+                boardUploadFromData.append('detailImage', 사진한장씩);
+            });
+        }
+        await boardSave(axios, boardUploadFromData, navigate);
+
+
     };
+    //export const formatPrice = (price) => {
+    //     return new Intl.NumberFormat("ko-KR").format(price);
+    // }
 
     const handleCheckChange = (e) => {
-        // const {name, value} = e.target;
-        handleChange(e, setFormData)
+        handleChange(e, setBoard);
+    }
+
+    // 상세 이미지 여러 장 변경 핸들러
+    const handleDetailImagesChanges = (e) => {
+        const files = Array.from(e.target.files);
+
+        // 최대 5장 까지만 허용
+        if (files.length > 5) {
+            alert("상세 이미지는 최대 5장 까지  업로드 가능합니다.");
+            return;
+        }
+
+        // 각 파일이 5MB 가 넘는지 검증
+        for (let f of files) {
+            if (f.size > 5 * 1024 * 1024) {
+                alert(`${f.name}의 크기가 5MB 를 초과합니다.`);
+                return;
+            }
+
+            if (!f.type.startsWith('image/')) {
+                alert(`${f.name}은(는) 이미지 파일이 아닙니다.`);
+                return;
+            }
+        }
+        // for 문을 통해 모든 사진에 대한 검증이 종료되면, 상세이미지 파일에 파일명칭 저장
+        set상세사진_이름들(files);
+
+        // 미리보기 생성
+        const 미리보기할_상세사진들 = [];
+        let 사진개수 = 0;
+
+        files.forEach((file, 사진순서) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                미리보기할_상세사진들[사진순서] = reader.result;
+                사진개수++;
+
+                // 모든 파일 로드 완료 시
+                if(사진개수 === files.length) {
+                    // 미리보기화면에서 보일 수 있도록 setter 를 이용하여 미리보기 변수에 저장
+                    set상세사진들_미리보기(미리보기할_상세사진들);
+                }
+            };
+            // 파일 하나씩 하나씩 미리보기 생성~
+            reader.readAsDataURL(file);
+        })
+
     }
 
 
-    // ok를 할 경우 게시물 목록으로 돌려보내기   기능이 하나이기 때문에 if 다음 navigate 는 {} 생략 후 작성
     const handleCancel = () => {
         if (window.confirm("작성을 취소하시겠습니까?")) navigate('/board');
     }
+
     return (
         <div className="page-container">
-            {isAuthenticated ? /* return 이 생략된 형태 */ (
+            {isAuthenticated ? /* return 이 생략된 형태 */(
                 <>
                     <h1>글쓰기</h1>
                     <form onSubmit={handleSubmit}>
 
-
                         <div className="writer-section">
-                            <label>작성자 : </label>
+                            <label>작성자 :</label>
                             <div className="writer-display">
                                 <span className="writer-email">{user?.memberName}</span>
                             </div>
@@ -124,22 +162,11 @@ const BoardWrite = () => {
                             <input type="text"
                                    id="title"
                                    name="title"
-                                   value={formData.title}
+                                   value={board.title}
                                    onChange={handleCheckChange}
                                    placeholder="제목을 입력하세요."
                                    maxLength={200}
                                    required
-                            />
-                        </label>
-                        <label>내용 :
-                            <textarea
-                                id="content"
-                                name="content"
-                                value={formData.content}
-                                onChange={handleCheckChange}
-                                placeholder="내용을 입력하세요."
-                                rows={15}
-                                required
                             />
                         </label>
 
@@ -151,20 +178,19 @@ const BoardWrite = () => {
                                 type="file"
                                 id="imageUrl"
                                 name="imageUrl"
-                                ref={boardImgFileInputRef}
-                                onChange={handleChangeImage(setBoardImagePreview, setUploadBoardImageFile, setFormData)}
+                                ref={mainImgFileInputRef}
+                                onChange={handleChangeImage(setboardMainImagePreview, setuploadedMainBoardImageFile, setBoard)}
                                 accept="image/*"
                                 style={{display: 'none'}}
-
                             />
                             <small className="form-hint">
                                 게시물 이미지를 업로드 하세요. (최대 5MB, 이미지 파일만 가능)
                             </small>
 
-                            {boardImagePreview && (
+                            {boardMainImagePreview && (
                                 <div className="image-preview">
                                     <img
-                                        src={boardImagePreview}
+                                        src={boardMainImagePreview}
                                         alt="미리보기"
                                         style={{
                                             maxWidth: '100%',
@@ -179,6 +205,51 @@ const BoardWrite = () => {
                             )}
                         </div>
 
+                        {/* 상세 이미지 여러 장 업로드 & 미리보기 */}
+                        <div className="form-group">
+                            <label htmlFor="detailImages" className="btn-upload">
+                                상세 이미지 추가하기 (최대 5장)
+                            </label>
+                            <input
+                                type="file"
+                                id="detailImages"
+                                name="detailImages"
+                                ref={상세사진_새로고침해도_상태변화없도록_설정}
+                                onChange={handleDetailImagesChanges}
+                                accept="image/*"
+                                multiple
+                                style={{display: 'none'}}
+                            />
+                            <small className="form-hint">
+                                상세 이미지를 업로드하세요. (최대 5개, 각 5MB이하)
+                            </small>
+
+                            {상세사진들_미리보기.length > 0 && (
+                                <div className="multiple-images-preview">
+                                    <p className="detail-images-selected-text">
+                                        선택된 이미지 : {상세사진들_미리보기.length} 개
+                                    </p>
+                                    {상세사진들_미리보기.map((image, index) => (
+                                        <div key={index} className="detail-image-item">
+                                            <img src={image}
+                                                 alt={`상세이미지 ${index + 1}`} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <label>내용 :
+                            <textarea
+                                id="content"
+                                name="content"
+                                value={board.content}
+                                onChange={handleCheckChange}
+                                placeholder="내용을 입력하세요."
+                                rows={15}
+                                required
+                            />
+                        </label>
                         <div className="form-buttons">
                             <button type="submit"
                                     className="btn-submit">
@@ -186,18 +257,22 @@ const BoardWrite = () => {
                             </button>
                             <button
                                 type="button"
-                                className="btn-cance    l"
+                                className="btn-cancel "
                                 onClick={handleCancel}
                             >
                                 돌아가기
                             </button>
                         </div>
+
                     </form>
                 </>
-            ) : (navigate('/login'))
+            ) : (
+                navigate('/login')
+            )
             }
         </div>
     )
 };
+
 
 export default BoardWrite;

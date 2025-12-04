@@ -40,20 +40,13 @@ export const fetchSignup = async (axios, formData, profileImage) => {
     // body 형태로 전달하기
     // requestBody requestParam
     //    body         header
-    /*const signupData = {
+    const signupData = {
         memberName: formData.memberName,
         memberEmail: formData.memberEmail,
         memberPassword: formData.memberPw,
-    }*/
-
-    const signupData = new FormData();
-    signupData.append("memberName", formData.memberName);
-    signupData.append("memberEmail", formData.memberEmail);
-    signupData.append("memberPassword", formData.memberPw);
-
-
+    }
     if(profileImage){
-        signupData.append('profileImage', profileImage);
+        signupData.append('profileImage', profileImage)
     }
     try {
         const res = await axios.post(API_URLS.AUTH + "/signup", signupData, {
@@ -98,16 +91,18 @@ export const fetchMypageEdit = async (axios, formData, navigate, setIsSubmitting
     const updateData = {
         memberName: formData.memberName,
         memberEmail: formData.memberEmail,
+        //   memberPostCode: formData.memberPostCode,
+        memberAddress: formData.memberAddress,
+        //   memberDetailAddress: formData.memberDetailAddress ,
         memberPhone: formData.memberPhone,
-        memberAddress: formData.memberAddress + formData.memberDetailAddress,
         newPassword: formData.newPassword || null,
         currentPassword: formData.currentPassword || null,
     }
     try {
         const res = await axios.put(API_URLS.AUTH + "/update", updateData);
-        if (res.data.success === true ) {
+        if (res.data.success === true) {
             alert("회원정보가 수정되었습니다.")
-        } else if(res.data.message === "wrongPassword") {
+        } else if(res.data.message === "wrongPassword"){
             alert("현재 비밀번호가 일치하지 않습니다.")
         } else {
             alert("회원정보 수정에  실패했습니다.")
@@ -131,19 +126,15 @@ export const fetchMypageEditWithProfile = async (axios, formData, profileFile, n
         memberProfileImage: profileFile,
     }
     try {
-        const res =await axios.put(API_URLS.AUTH + "/update", updateData,{
+        const res = await axios.put(API_URLS.AUTH + "/update", updateData,{
             headers: {
                 'Content-Type':'multipart/form-data'
             },
             withCredentials: true
         });
-        if (res.data.success === true ) {
+        if (res.data.success === true) {
             alert("회원정보가 수정되었습니다.")
-        } else if(res.data.success === false){
-            alert("현재 비밀번호가 일치하지 않습니다.")
-        } else {
-            // console.log를 찍었는데 콘솔이 찍히지 않는 것은 결과를 불러오기 전에 자바스크립트에서 실행이 먼저 되었기 때문에
-           // console.log("res.data : ",res.data);
+        }  else {
             alert("회원정보 수정에  실패했습니다.")
         }
     } catch (err) {
@@ -295,7 +286,7 @@ export const fetchBoardDetail = async (axios, id, setBoard, navigate, setLoading
 export const boardSave = async (axios, formData, navigate) => {
 
     try {
-        const res = await axios.post(`${API_URLS.BOARD}`, formData, {
+        const res = await axios.post(`${API_URLS.BOARD}`, formData,{
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
